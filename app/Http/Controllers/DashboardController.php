@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Customer;
 
@@ -10,7 +11,8 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         
         if ($user->isAdmin()) {
             return $this->adminDashboard($request);
@@ -21,7 +23,8 @@ class DashboardController extends Controller
 
     private function agentDashboard(Request $request)
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         $query = $user->customers();
 
         // Filter by status if provided
@@ -63,7 +66,8 @@ class DashboardController extends Controller
 
     public function followupToday()
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         $query = $user->isAdmin() 
             ? Customer::query() 
             : $user->customers();

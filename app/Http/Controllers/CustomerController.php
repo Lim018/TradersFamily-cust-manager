@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Customer;
 use App\Models\ActivityLog;
 
@@ -11,7 +12,10 @@ class CustomerController extends Controller
     public function update(Request $request, Customer $customer)
     {
         // Check authorization
-        if (!auth()->user()->isAdmin() && $customer->user_id !== auth()->id()) {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if (!$user->isAdmin() && $customer->user_id !== $user->id) {
             abort(403);
         }
 
@@ -26,7 +30,7 @@ class CustomerController extends Controller
 
         // Log activity
         ActivityLog::create([
-            'user_id' => auth()->id(),
+            'user_id' => $user->id,
             'customer_id' => $customer->id,
             'action' => 'updated_manually',
             'description' => 'Customer data updated manually',
