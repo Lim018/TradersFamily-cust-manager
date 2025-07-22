@@ -31,7 +31,7 @@ class WebhookController extends Controller
                 'fu_jumlah' => 'nullable|integer',
                 'fu_ke_1' => 'nullable|date',
                 'fu_checkbox' => 'nullable|boolean',
-                'next_fu' => 'nullable|date',
+                'next_fu' => 'nullable|string',
                 'sheet_month' => 'nullable|string',
                 'notes' => 'nullable|string'
             ]);

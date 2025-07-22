@@ -29,7 +29,7 @@ return new class extends Migration
             $table->integer('fu_jumlah')->default(0);
             $table->date('fu_ke_1')->nullable();
             $table->boolean('fu_checkbox')->default(false);
-            $table->date('next_fu')->nullable();
+            $table->string('next_fu')->nullable();
             $table->json('fu_dates')->nullable(); // Store FU ke 2, 3, dst
             $table->string('sheet_month')->nullable();
             $table->text('notes')->nullable(); // Manual notes by agent
