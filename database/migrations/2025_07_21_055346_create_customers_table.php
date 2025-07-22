@@ -24,7 +24,6 @@ return new class extends Migration
             $table->string('offer')->nullable();
             $table->enum('status_fu', ['normal', 'warm', 'hot'])->default('normal');
             $table->date('tanggal_closing')->nullable();
-            $table->date('sheet_month')->nullable();
             $table->text('report')->nullable();
             $table->string('alasan_depo_decline')->nullable();
             $table->integer('fu_jumlah')->default(0);
@@ -32,6 +31,7 @@ return new class extends Migration
             $table->boolean('fu_checkbox')->default(false);
             $table->date('next_fu')->nullable();
             $table->json('fu_dates')->nullable(); // Store FU ke 2, 3, dst
+            $table->string('sheet_month')->nullable();
             $table->text('notes')->nullable(); // Manual notes by agent
             $table->date('followup_date')->nullable(); // Manual follow-up date
             $table->timestamps();
