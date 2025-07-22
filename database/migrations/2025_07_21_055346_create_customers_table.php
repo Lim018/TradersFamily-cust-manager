@@ -27,7 +27,7 @@ return new class extends Migration
             $table->text('report')->nullable();
             $table->string('alasan_depo_decline')->nullable();
             $table->integer('fu_jumlah')->default(0);
-            $table->date('fu_ke_1')->nullable();
+            $table->string('fu_ke_1')->nullable();
             $table->boolean('fu_checkbox')->default(false);
             $table->string('next_fu')->nullable();
             $table->json('fu_dates')->nullable(); // Store FU ke 2, 3, dst

@@ -29,7 +29,7 @@ class WebhookController extends Controller
                 'report' => 'nullable|string',
                 'alasan_depo_decline' => 'nullable|string',
                 'fu_jumlah' => 'nullable|integer',
-                'fu_ke_1' => 'nullable|date',
+                'fu_ke_1' => 'nullable|string',
                 'fu_checkbox' => 'nullable|boolean',
                 'next_fu' => 'nullable|string',
                 'sheet_month' => 'nullable|string',
