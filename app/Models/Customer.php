@@ -10,7 +10,7 @@ class Customer extends Model
         'user_id', 'tanggal', 'regis', 'nama', 'email', 'phone',
         'first_visit', 'interest', 'offer', 'status_fu', 'tanggal_closing',
         'report', 'alasan_depo_decline', 'fu_jumlah', 'fu_ke_1',
-        'fu_checkbox', 'next_fu', 'fu_dates', 'notes', 'followup_date'
+        'fu_checkbox', 'next_fu', 'fu_dates', 'notes', 'followup_date', 'sheet_month'
     ];
 
     protected $casts = [

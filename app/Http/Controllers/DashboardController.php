@@ -32,39 +32,87 @@ class DashboardController extends Controller
             $query->where('status_fu', $request->status);
         }
 
+        // Filter by month if provided
+        if ($request->has('month') && $request->month !== '') {
+            $query->where('sheet_month', $request->month);
+        }
+
         $customers = $query->orderBy('created_at', 'desc')->paginate(20);
         
-        // Stats for agent
+        // Get available months for filter dropdown
+        $availableMonths = $user->customers()
+            ->whereNotNull('sheet_month')
+            ->distinct()
+            ->pluck('sheet_month')
+            ->sort()
+            ->values();
+        
+        // Stats for agent - apply same filters to stats
+        $statsQuery = $user->customers();
+        if ($request->has('month') && $request->month !== '') {
+            $statsQuery->where('sheet_month', $request->month);
+        }
+        
         $stats = [
-            'total_customers' => $user->customers->count(),
-            'normal' => $user->customers->where('status_fu', 'normal')->count(),
-            'warm' => $user->customers->where('status_fu', 'warm')->count(),
-            'hot' => $user->customers->where('status_fu', 'hot')->count(),
-            'followup_today' => $user->customers->where('followup_date', today())->count()
+            'total_customers' => $statsQuery->count(),
+            'normal' => $statsQuery->where('status_fu', 'normal')->count(),
+            'warm' => $statsQuery->where('status_fu', 'warm')->count(),
+            'hot' => $statsQuery->where('status_fu', 'hot')->count(),
+            'followup_today' => $statsQuery->where('followup_date', today())->count()
         ];
 
-        return view('dashboard.agent', compact('customers', 'stats'));
+        return view('dashboard.agent', compact('customers', 'stats', 'availableMonths'));
     }
 
     private function adminDashboard(Request $request)
     {
         // Admin can see all customers and agents
         $agents = User::where('role', 'agent')->withCount('customers')->get();
-        $totalCustomers = Customer::count();
+        
+        // Apply month filter if provided
+        $customerQuery = Customer::query();
+        if ($request->has('month') && $request->month !== '') {
+            $customerQuery->where('sheet_month', $request->month);
+        }
+        
+        $totalCustomers = $customerQuery->count();
+        
+        // Get available months for filter dropdown
+        $availableMonths = Customer::whereNotNull('sheet_month')
+            ->distinct()
+            ->pluck('sheet_month')
+            ->sort()
+            ->values();
         
         $stats = [
             'total_customers' => $totalCustomers,
             'total_agents' => $agents->count(),
-            'normal' => Customer::where('status_fu', 'normal')->count(),
-            'warm' => Customer::where('status_fu', 'warm')->count(),
-            'hot' => Customer::where('status_fu', 'hot')->count(),
-            'followup_today' => Customer::where('followup_date', today())->count()
+            'normal' => (clone $customerQuery)->where('status_fu', 'normal')->count(),
+            'warm' => (clone $customerQuery)->where('status_fu', 'warm')->count(),
+            'hot' => (clone $customerQuery)->where('status_fu', 'hot')->count(),
+            'followup_today' => (clone $customerQuery)->where('followup_date', today())->count()
         ];
 
-        return view('dashboard.admin', compact('agents', 'stats'));
+        // Update agents data with month filter
+        if ($request->has('month') && $request->month !== '') {
+            $agents = User::where('role', 'agent')
+                ->withCount(['customers' => function($query) use ($request) {
+                    $query->where('sheet_month', $request->month);
+                }])
+                ->get();
+                
+            // Load filtered customers for each agent
+            $agents->load(['customers' => function($query) use ($request) {
+                $query->where('sheet_month', $request->month);
+            }]);
+        } else {
+            $agents->load('customers');
+        }
+
+        return view('dashboard.admin', compact('agents', 'stats', 'availableMonths'));
     }
 
-    public function followupToday()
+    public function followupToday(Request $request)
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
@@ -72,10 +120,20 @@ class DashboardController extends Controller
             ? Customer::query() 
             : $user->customers();
             
+        // Filter by month if provided
+        if ($request->has('month') && $request->month !== '') {
+            $query->where('sheet_month', $request->month);
+        }
+            
         $customers = $query->where('followup_date', today())
                           ->with('user')
                           ->get();
+                          
+        // Get available months for filter dropdown
+        $availableMonths = $user->isAdmin() 
+            ? Customer::whereNotNull('sheet_month')->distinct()->pluck('sheet_month')->sort()->values()
+            : $user->customers()->whereNotNull('sheet_month')->distinct()->pluck('sheet_month')->sort()->values();
 
-        return view('dashboard.followup-today', compact('customers'));
+        return view('dashboard.followup-today', compact('customers', 'availableMonths'));
     }
 }

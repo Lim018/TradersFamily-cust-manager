@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('offer')->nullable();
             $table->enum('status_fu', ['normal', 'warm', 'hot'])->default('normal');
             $table->date('tanggal_closing')->nullable();
+            $table->date('sheet_month')->nullable();
             $table->text('report')->nullable();
             $table->string('alasan_depo_decline')->nullable();
             $table->integer('fu_jumlah')->default(0);
