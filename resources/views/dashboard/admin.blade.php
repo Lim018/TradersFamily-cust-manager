@@ -12,6 +12,41 @@
     </div>
 </div>
 
+<!-- Month Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ route('dashboard') }}" class="row g-3">
+            <div class="col-md-4">
+                <label for="month" class="form-label">Filter Bulan Sheet</label>
+                <select name="month" id="month" class="form-select">
+                    <option value="">Semua Bulan</option>
+                    @foreach($availableMonths as $month)
+                    <option value="{{ $month }}" {{ request('month') == $month ? 'selected' : '' }}>
+                        {{ $month }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-8 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+                <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i> Reset
+                </a>
+                @if(request('month'))
+                <div class="ms-3 d-flex align-items-center">
+                    <small class="text-muted">
+                        <i class="bi bi-funnel-fill"></i> 
+                        Filter aktif: <span class="badge bg-info ms-1">{{ request('month') }}</span>
+                    </small>
+                </div>
+                @endif
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Overall Stats -->
 <div class="row mb-4">
     <div class="col-md-3">
@@ -21,6 +56,9 @@
                     <div>
                         <h6 class="card-title text-muted">Total Customer</h6>
                         <h3 class="mb-0">{{ $stats['total_customers'] }}</h3>
+                        @if(request('month'))
+                        <small class="text-muted">Bulan: {{ request('month') }}</small>
+                        @endif
                     </div>
                     <div class="align-self-center">
                         <i class="bi bi-people fs-2 text-primary"></i>
@@ -51,6 +89,9 @@
                     <div>
                         <h6 class="card-title text-muted">Hot Leads</h6>
                         <h3 class="mb-0 text-danger">{{ $stats['hot'] }}</h3>
+                        @if(request('month'))
+                        <small class="text-muted">Bulan: {{ request('month') }}</small>
+                        @endif
                     </div>
                     <div class="align-self-center">
                         <i class="bi bi-fire fs-2 text-danger"></i>
@@ -66,6 +107,9 @@
                     <div>
                         <h6 class="card-title text-muted">Follow-up Hari Ini</h6>
                         <h3 class="mb-0 text-info">{{ $stats['followup_today'] }}</h3>
+                        @if(request('month'))
+                        <small class="text-muted">Bulan: {{ request('month') }}</small>
+                        @endif
                     </div>
                     <div class="align-self-center">
                         <i class="bi bi-calendar-check fs-2 text-info"></i>
@@ -81,7 +125,12 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Distribusi Status Customer</h5>
+                <h5 class="mb-0">
+                    Distribusi Status Customer
+                    @if(request('month'))
+                    <small class="text-muted">({{ request('month') }})</small>
+                    @endif
+                </h5>
             </div>
             <div class="card-body">
                 <canvas id="statusChart" width="400" height="200"></canvas>
@@ -91,7 +140,12 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Performance Agent</h5>
+                <h5 class="mb-0">
+                    Performance Agent
+                    @if(request('month'))
+                    <small class="text-muted">({{ request('month') }})</small>
+                    @endif
+                </h5>
             </div>
             <div class="card-body">
                 <canvas id="agentChart" width="400" height="200"></canvas>
@@ -103,7 +157,12 @@
 <!-- Agent Performance Table -->
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0">Detail Performance Agent</h5>
+        <h5 class="mb-0">
+            Detail Performance Agent
+            @if(request('month'))
+            <small class="text-muted">({{ request('month') }})</small>
+            @endif
+        </h5>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -155,7 +214,12 @@
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title">Detail Agent: {{ $agent->name }}</h5>
+                                    <h5 class="modal-title">
+                                        Detail Agent: {{ $agent->name }}
+                                        @if(request('month'))
+                                        <small class="text-muted">({{ request('month') }})</small>
+                                        @endif
+                                    </h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
                                 <div class="modal-body">
@@ -175,6 +239,7 @@
                                                 <tr>
                                                     <th>Nama</th>
                                                     <th>Status</th>
+                                                    <th>Sheet Month</th>
                                                     <th>Tanggal</th>
                                                 </tr>
                                             </thead>
@@ -186,6 +251,13 @@
                                                         <span class="badge bg-{{ $customer->status_fu == 'hot' ? 'danger' : ($customer->status_fu == 'warm' ? 'warning' : 'secondary') }}">
                                                             {{ ucfirst($customer->status_fu) }}
                                                         </span>
+                                                    </td>
+                                                    <td>
+                                                        @if($customer->sheet_month)
+                                                        <small class="text-muted">{{ $customer->sheet_month }}</small>
+                                                        @else
+                                                        <small class="text-muted">-</small>
+                                                        @endif
                                                     </td>
                                                     <td>{{ $customer->created_at->format('d/m/Y') }}</td>
                                                 </tr>
@@ -224,6 +296,10 @@ new Chart(statusCtx, {
         plugins: {
             legend: {
                 position: 'bottom'
+            },
+            title: {
+                display: {{ request('month') ? 'true' : 'false' }},
+                text: '{{ request('month') ? "Data untuk " . request('month') : "" }}'
             }
         }
     }
@@ -256,6 +332,12 @@ new Chart(agentCtx, {
         scales: {
             y: {
                 beginAtZero: true
+            }
+        },
+        plugins: {
+            title: {
+                display: {{ request('month') ? 'true' : 'false' }},
+                text: '{{ request('month') ? "Performance untuk " . request('month') : "" }}'
             }
         }
     }

@@ -10,10 +10,48 @@
     </div>
 </div>
 
+<!-- Month Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ route('followup.today') }}" class="row g-3">
+            <div class="col-md-4">
+                <label for="month" class="form-label">Filter Bulan Sheet</label>
+                <select name="month" id="month" class="form-select">
+                    <option value="">Semua Bulan</option>
+                    @foreach($availableMonths as $month)
+                    <option value="{{ $month }}" {{ request('month') == $month ? 'selected' : '' }}>
+                        {{ $month }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-8 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+                <a href="{{ route('followup.today') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i> Reset
+                </a>
+                @if(request('month'))
+                <div class="ms-3 d-flex align-items-center">
+                    <small class="text-muted">
+                        <i class="bi bi-funnel-fill"></i> 
+                        Filter aktif: <span class="badge bg-info ms-1">{{ request('month') }}</span>
+                    </small>
+                </div>
+                @endif
+            </div>
+        </form>
+    </div>
+</div>
+
 @if($customers->count() > 0)
     <div class="alert alert-info">
         <i class="bi bi-info-circle"></i>
         <strong>{{ $customers->count() }} customer</strong> perlu di-follow up hari ini ({{ now()->format('d F Y') }})
+        @if(request('month'))
+        <br><small>Menampilkan data untuk bulan sheet: <strong>{{ request('month') }}</strong></small>
+        @endif
     </div>
 
     <div class="row">
@@ -32,6 +70,14 @@
                     <div class="mb-2">
                         <small class="text-muted">
                             <i class="bi bi-person"></i> Agent: {{ $customer->user->name }}
+                        </small>
+                    </div>
+                    @endif
+                    
+                    @if($customer->sheet_month)
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="bi bi-calendar3"></i> Sheet: {{ $customer->sheet_month }}
                         </small>
                     </div>
                     @endif
@@ -141,8 +187,20 @@
     <div class="card">
         <div class="card-body text-center py-5">
             <i class="bi bi-calendar-check fs-1 text-muted"></i>
-            <h5 class="text-muted mt-3">Tidak ada follow-up hari ini</h5>
-            <p class="text-muted">Semua follow-up sudah selesai atau belum ada yang dijadwalkan untuk hari ini.</p>
+            <h5 class="text-muted mt-3">
+                @if(request('month'))
+                    Tidak ada follow-up hari ini untuk bulan {{ request('month') }}
+                @else
+                    Tidak ada follow-up hari ini
+                @endif
+            </h5>
+            <p class="text-muted">
+                @if(request('month'))
+                    Coba pilih bulan lain atau <a href="{{ route('followup.today') }}">lihat semua bulan</a>
+                @else
+                    Semua follow-up sudah selesai atau belum ada yang dijadwalkan untuk hari ini.
+                @endif
+            </p>
             <a href="{{ route('dashboard') }}" class="btn btn-primary">
                 <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
             </a>

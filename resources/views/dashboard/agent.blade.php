@@ -80,7 +80,7 @@
 <div class="card mb-4">
     <div class="card-body">
         <form method="GET" action="{{ route('dashboard') }}" class="row g-3">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label for="status" class="form-label">Filter Status</label>
                 <select name="status" id="status" class="form-select">
                     <option value="">Semua Status</option>
@@ -89,13 +89,38 @@
                     <option value="hot" {{ request('status') == 'hot' ? 'selected' : '' }}>Hot</option>
                 </select>
             </div>
-            <div class="col-md-4 d-flex align-items-end">
+            <div class="col-md-3">
+                <label for="month" class="form-label">Filter Bulan Sheet</label>
+                <select name="month" id="month" class="form-select">
+                    <option value="">Semua Bulan</option>
+                    @foreach($availableMonths as $month)
+                    <option value="{{ $month }}" {{ request('month') == $month ? 'selected' : '' }}>
+                        {{ $month }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary me-2">
                     <i class="bi bi-funnel"></i> Filter
                 </button>
                 <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-x-circle"></i> Reset
                 </a>
+                @if(request('status') || request('month'))
+                <div class="ms-3 d-flex align-items-center">
+                    <small class="text-muted">
+                        <i class="bi bi-funnel-fill"></i> 
+                        Filter aktif:
+                        @if(request('status'))
+                            <span class="badge bg-primary ms-1">{{ ucfirst(request('status')) }}</span>
+                        @endif
+                        @if(request('month'))
+                            <span class="badge bg-info ms-1">{{ request('month') }}</span>
+                        @endif
+                    </small>
+                </div>
+                @endif
             </div>
         </form>
     </div>
@@ -103,8 +128,13 @@
 
 <!-- Customer List -->
 <div class="card">
-    <div class="card-header">
+    <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Daftar Customer</h5>
+        @if(request('status') || request('month'))
+        <small class="text-muted">
+            Menampilkan {{ $customers->total() }} dari {{ Auth::user()->customers->count() }} total customer
+        </small>
+        @endif
     </div>
     <div class="card-body">
         @if($customers->count() > 0)
@@ -119,6 +149,14 @@
                                     {{ ucfirst($customer->status_fu) }}
                                 </span>
                             </div>
+                            
+                            @if($customer->sheet_month)
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar3"></i> Sheet: {{ $customer->sheet_month }}
+                                </small>
+                            </div>
+                            @endif
                             
                             <div class="mb-2">
                                 <small class="text-muted">
@@ -144,6 +182,11 @@
                             <div class="mb-2">
                                 <small class="text-muted">
                                     <i class="bi bi-calendar"></i> Follow-up: {{ $customer->followup_date->format('d/m/Y') }}
+                                    @if($customer->followup_date->isToday())
+                                        <span class="badge bg-warning text-dark ms-1">Hari Ini</span>
+                                    @elseif($customer->followup_date->isPast())
+                                        <span class="badge bg-danger ms-1">Terlambat</span>
+                                    @endif
                                 </small>
                             </div>
                             @endif
@@ -215,8 +258,20 @@
         @else
             <div class="text-center py-5">
                 <i class="bi bi-inbox fs-1 text-muted"></i>
-                <h5 class="text-muted mt-3">Belum ada customer</h5>
-                <p class="text-muted">Customer akan muncul otomatis ketika data dikirim dari Google Spreadsheet</p>
+                <h5 class="text-muted mt-3">
+                    @if(request('status') || request('month'))
+                        Tidak ada customer dengan filter yang dipilih
+                    @else
+                        Belum ada customer
+                    @endif
+                </h5>
+                <p class="text-muted">
+                    @if(request('status') || request('month'))
+                        Coba ubah filter atau <a href="{{ route('dashboard') }}">reset filter</a>
+                    @else
+                        Customer akan muncul otomatis ketika data dikirim dari Google Spreadsheet
+                    @endif
+                </p>
             </div>
         @endif
     </div>
