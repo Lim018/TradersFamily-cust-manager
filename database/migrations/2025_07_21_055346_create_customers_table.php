@@ -14,17 +14,17 @@ return new class extends Migration
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->date('tanggal');
+            $table->string('tanggal');
             $table->string('regis');
-            $table->string('nama');
+            $table->string('nama')->nullable();
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
             $table->string('first_visit')->nullable();
             $table->string('interest')->nullable();
             $table->string('offer')->nullable();
-            $table->enum('status_fu', ['normal', 'warm', 'hot'])->default('normal');
-            $table->date('tanggal_closing')->nullable();
-            $table->text('report')->nullable();
+            $table->enum('status_fu', ['normal', 'warm', 'hot', ])->default('normal');
+            $table->string('tanggal_closing')->nullable();
+            $table->string('report')->nullable();
             $table->string('alasan_depo_decline')->nullable();
             $table->integer('fu_jumlah')->default(0);
             $table->string('fu_ke_1')->nullable();
