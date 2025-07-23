@@ -24,7 +24,7 @@ class WebhookController extends Controller
                 'first_visit' => 'nullable|string',
                 'interest' => 'nullable|string',
                 'offer' => 'nullable|string',
-                'status_fu' => 'nullable|in:normal,warm,hot',
+                'status_fu' => 'nullable|in:normal,warm,hot,Normal (Prospect),Warm (Potential),Hot (Closeable)',
                 'tanggal_closing' => 'nullable|string',
                 'report' => 'nullable|string',
                 'alasan_depo_decline' => 'nullable|string',
