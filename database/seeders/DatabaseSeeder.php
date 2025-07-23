@@ -38,7 +38,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'agent1@customersync.com',
             'password' => Hash::make('password'),
             'role' => 'agent',
-            'agent_code' => 'AG001'
+            'agent_code' => 'AGT001'
         ]);
 
         User::create([

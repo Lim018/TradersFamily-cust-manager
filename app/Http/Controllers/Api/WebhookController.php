@@ -16,7 +16,7 @@ class WebhookController extends Controller
         try {
             $validated = $request->validate([
                 'agent_code' => 'required|string',
-                'nama' => 'required|string',
+                'nama' => 'nullable|string',
                 'tanggal' => 'nullable|string',
                 'regis' => 'nullable|string',
                 'email' => 'nullable|string',

@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('first_visit')->nullable();
             $table->string('interest')->nullable();
             $table->string('offer')->nullable();
-            $table->enum('status_fu', ['normal', 'warm', 'hot', ])->default('normal');
+            $table->enum('status_fu', ['normal', 'warm', 'hot', ]);
             $table->string('tanggal_closing')->nullable();
             $table->string('report')->nullable();
             $table->string('alasan_depo_decline')->nullable();
