@@ -14,10 +14,10 @@ class Customer extends Model
     ];
 
     protected $casts = [
-        'tanggal' => 'date',
-        'tanggal_closing' => 'date',
-        'fu_ke_1' => 'date',
-        'next_fu' => 'date',
+        'tanggal' => 'string',
+        'tanggal_closing' => 'string',
+        'fu_ke_1' => 'string',
+        'next_fu' => 'string',
         'followup_date' => 'date',
         'fu_checkbox' => 'boolean',
         'fu_dates' => 'array'

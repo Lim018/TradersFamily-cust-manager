@@ -16,22 +16,22 @@ class WebhookController extends Controller
         try {
             $validated = $request->validate([
                 'agent_code' => 'required|string',
-                'nama' => 'required|string',
-                'tanggal' => 'nullable|date',
+                'nama' => 'nullable|string',
+                'tanggal' => 'nullable|string',
                 'regis' => 'nullable|string',
-                'email' => 'nullable|email',
+                'email' => 'nullable|string',
                 'phone' => 'nullable|string',
                 'first_visit' => 'nullable|string',
                 'interest' => 'nullable|string',
                 'offer' => 'nullable|string',
-                'status_fu' => 'nullable|in:normal,warm,hot',
-                'tanggal_closing' => 'nullable|date',
+                'status_fu' => 'nullable|in:normal,warm,hot,normal(prospect),warm(potential),hot(closeable)',
+                'tanggal_closing' => 'nullable|string',
                 'report' => 'nullable|string',
                 'alasan_depo_decline' => 'nullable|string',
                 'fu_jumlah' => 'nullable|integer',
-                'fu_ke_1' => 'nullable|date',
+                'fu_ke_1' => 'nullable|string',
                 'fu_checkbox' => 'nullable|boolean',
-                'next_fu' => 'nullable|date',
+                'next_fu' => 'nullable|string',
                 'sheet_month' => 'nullable|string',
                 'notes' => 'nullable|string'
             ]);
@@ -51,7 +51,7 @@ class WebhookController extends Controller
                             ->first();
 
             $validated['user_id'] = $user->id;
-            $validated['followup_date'] = $validated['next_fu'] ?? null;
+            $validated['followup_date'] = null;
 
             if ($customer) {
                 // Update existing customer
