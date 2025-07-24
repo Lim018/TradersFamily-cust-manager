@@ -51,7 +51,7 @@ class WebhookController extends Controller
                             ->first();
 
             $validated['user_id'] = $user->id;
-            $validated['followup_date'] = $validated['next_fu'] ?? null;
+            $validated['followup_date'] = null;
 
             if ($customer) {
                 // Update existing customer
