@@ -1,457 +1,590 @@
 @extends('layouts.app')
 
-@section('title', 'Follow-up Hari Ini')
-
 @section('content')
-<div class="container-fluid">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0 text-gray-800">Follow-up Hari Ini</h1>
-            <p class="mb-0 text-muted">{{ now()->format('l, d F Y') }} - {{ $customers->count() }} customer perlu di follow-up</p>
-        </div>
-        <div>
-            <a href="{{ route('dashboard') }}" class="btn btn-secondary me-2">
-                <i class="fas fa-arrow-left"></i> Kembali ke Dashboard
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <div>
+        <h1 class="h2">
+            <i class="bi bi-calendar-check text-info"></i> Follow-up Hari Ini
+        </h1>
+        <small class="text-muted">{{ now()->format('l, d F Y') }}</small>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
             </a>
-            {{-- <a href="{{ route('dashboard.export', array_merge(request()->query(), ['followup_status' => 'today'])) }}" class="btn btn-success">
-                <i class="fas fa-download"></i> Export CSV
-            </a> --}}
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
         </div>
     </div>
+</div>
 
-    <!-- Quick Stats -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Total Follow-up</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $customers->count() }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar-day fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card border-left-danger shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Hot Leads</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                {{ $customers->where('status_fu', 'hot')->count() + $customers->where('status_fu', 'hot(closeable)')->count() }}
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-fire fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Warm Leads</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                {{ $customers->where('status_fu', 'warm')->count() + $customers->where('status_fu', 'warm(potential)')->count() }}
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-thermometer-half fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Dengan Phone</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                {{ $customers->whereNotNull('phone')->where('phone', '!=', '')->count() }}
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-phone fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
+<!-- Priority Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-danger">
+            <div class="card-body text-center">
+                <i class="bi bi-exclamation-triangle-fill fs-1 text-danger"></i>
+                <h3 class="text-danger mt-2">{{ $customers->where('status_fu', 'hot(closeable)')->count() }}</h3>
+                <small class="text-muted">Hot (Closeable) - PRIORITAS TINGGI</small>
             </div>
         </div>
     </div>
-
-    <!-- Priority Notice -->
-    @if($customers->whereIn('status_fu', ['hot', 'hot(closeable)'])->count() > 0)
-    <div class="alert alert-danger mb-4" role="alert">
-        <i class="fas fa-exclamation-triangle"></i>
-        <strong>Prioritas Tinggi!</strong> Terdapat {{ $customers->whereIn('status_fu', ['hot', 'hot(closeable)'])->count() }} hot leads yang perlu segera di follow-up hari ini.
-    </div>
-    @endif
-
-    <!-- Filters -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Filter Data</h6>
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body text-center">
+                <i class="bi bi-fire fs-1 text-warning"></i>
+                <h3 class="text-warning mt-2">{{ $customers->where('status_fu', 'hot')->count() }}</h3>
+                <small class="text-muted">Hot - Urgent</small>
+            </div>
         </div>
-        <div class="card-body">
-            <form method="GET" action="{{ route('followup.today') }}" class="row g-3">
-                <div class="col-md-2">
-                    <label class="form-label">Status FU</label>
-                    <select name="status" class="form-select">
+    </div>
+    <div class="col-md-3">
+        <div class="card border-info">
+            <div class="card-body text-center">
+                <i class="bi bi-thermometer-half fs-1 text-info"></i>
+                <h3 class="text-info mt-2">{{ $customers->whereIn('status_fu', ['warm', 'warm(potential)'])->count() }}</h3>
+                <small class="text-muted">Warm - Medium</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-secondary">
+            <div class="card-body text-center">
+                <i class="bi bi-person fs-1 text-secondary"></i>
+                <h3 class="text-secondary mt-2">{{ $customers->whereIn('status_fu', ['normal', 'normal(prospect)'])->count() }}</h3>
+                <small class="text-muted">Normal - Low</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Filter untuk Follow-up Today -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h6 class="mb-0">
+            <i class="bi bi-funnel"></i> Filter Follow-up Hari Ini
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ route('followup.today') }}" id="filterForm">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select name="status" id="status" class="form-select form-select-sm">
                         <option value="">Semua Status</option>
-                        <option value="normal" {{ $filters['status'] == 'normal' ? 'selected' : '' }}>Normal</option>
-                        <option value="warm" {{ $filters['status'] == 'warm' ? 'selected' : '' }}>Warm</option>
-                        <option value="hot" {{ $filters['status'] == 'hot' ? 'selected' : '' }}>Hot</option>
-                        <option value="normal(prospect)" {{ $filters['status'] == 'normal(prospect)' ? 'selected' : '' }}>Normal (Prospect)</option>
-                        <option value="warm(potential)" {{ $filters['status'] == 'warm(potential)' ? 'selected' : '' }}>Warm (Potential)</option>
                         <option value="hot(closeable)" {{ $filters['status'] == 'hot(closeable)' ? 'selected' : '' }}>Hot (Closeable)</option>
+                        <option value="hot" {{ $filters['status'] == 'hot' ? 'selected' : '' }}>Hot</option>
+                        <option value="warm(potential)" {{ $filters['status'] == 'warm(potential)' ? 'selected' : '' }}>Warm (Potential)</option>
+                        <option value="warm" {{ $filters['status'] == 'warm' ? 'selected' : '' }}>Warm</option>
+                        <option value="normal(prospect)" {{ $filters['status'] == 'normal(prospect)' ? 'selected' : '' }}>Normal (Prospect)</option>
+                        <option value="normal" {{ $filters['status'] == 'normal' ? 'selected' : '' }}>Normal</option>
                     </select>
                 </div>
-
-                <div class="col-md-2">
-                    <label class="form-label">Bulan</label>
-                    <select name="month" class="form-select">
-                        <option value="">Semua Bulan</option>
-                        @foreach($filterOptions['availableMonths'] as $month)
-                            <option value="{{ $month }}" {{ $filters['month'] == $month ? 'selected' : '' }}>
-                                {{ $month }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
+                
                 @if(Auth::user()->isAdmin())
-                <div class="col-md-2">
-                    <label class="form-label">Agent</label>
-                    <select name="agent" class="form-select">
+                <div class="col-md-3">
+                    <label for="agent" class="form-label">Agent</label>
+                    <select name="agent" id="agent" class="form-select form-select-sm">
                         <option value="">Semua Agent</option>
                         @foreach($filterOptions['availableAgents'] as $agent)
-                            <option value="{{ $agent->id }}" {{ $filters['agent'] == $agent->id ? 'selected' : '' }}>
-                                {{ $agent->name }}
-                            </option>
+                        <option value="{{ $agent->id }}" {{ $filters['agent'] == $agent->id ? 'selected' : '' }}>
+                            {{ $agent->name }}
+                        </option>
                         @endforeach
                     </select>
                 </div>
                 @endif
-
-                <div class="col-md-2">
-                    <label class="form-label">Interest</label>
-                    <select name="interest" class="form-select">
-                        <option value="">Semua Interest</option>
-                        @foreach($filterOptions['availableInterests'] as $interest)
-                            <option value="{{ $interest }}" {{ $filters['interest'] == $interest ? 'selected' : '' }}>
-                                {{ $interest }}
-                            </option>
-                        @endforeach
-                    </select>
+                
+                <div class="col-md-3">
+                    <label for="search" class="form-label">Cari Customer</label>
+                    <input type="text" name="search" id="search" class="form-control form-control-sm" 
+                           placeholder="Nama, email, phone..." value="{{ $filters['search'] }}">
                 </div>
-
-                <div class="col-md-2">
-                    <label class="form-label">Pencarian</label>
-                    <input type="text" name="search" class="form-control" placeholder="Nama, Email, Phone" value="{{ $filters['search'] }}">
+                
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                        <a href="{{ route('followup.today') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-x-circle"></i> Reset
+                        </a>
+                    </div>
                 </div>
-
-                <div class="col-md-2">
-                    <label class="form-label">FU Count</label>
-                    <select name="fu_count" class="form-select">
-                        <option value="">Semua</option>
-                        <option value="0" {{ $filters['fu_count'] == '0' ? 'selected' : '' }}>Belum pernah FU</option>
-                        <option value="1" {{ $filters['fu_count'] == '1' ? 'selected' : '' }}>1x FU</option>
-                        <option value="2" {{ $filters['fu_count'] == '2' ? 'selected' : '' }}>2x FU</option>
-                        <option value="3" {{ $filters['fu_count'] == '3' ? 'selected' : '' }}>3x FU</option>
-                        <option value="4" {{ $filters['fu_count'] == '4' ? 'selected' : '' }}>4x FU</option>
-                        <option value="5+" {{ $filters['fu_count'] == '5+' ? 'selected' : '' }}>5+ FU</option>
-                    </select>
-                </div>
-
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary">Filter</button>
-                    <a href="{{ route('followup.today') }}" class="btn btn-secondary">Reset</a>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Customer List -->
-    <div class="card shadow">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Daftar Customer Follow-up Hari Ini</h6>
-            <div>
-                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#bulkActionModal">
-                    Bulk Action
-                </button>
             </div>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <form id="bulkForm">
-                    <table class="table table-bordered table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th width="30">
-                                    <input type="checkbox" id="selectAll">
-                                </th>
-                                <th>Priority</th>
-                                <th>Customer Info</th>
-                                <th>Contact</th>
-                                <th>Status & Interest</th>
-                                @if(Auth::user()->isAdmin())
-                                <th>Agent</th>
-                                @endif
-                                <th>FU Count</th>
-                                <th>Notes</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($customers as $customer)
-                                <tr class="{{ str_contains(strtolower($customer->status_fu), 'hot') ? 'table-danger' : (str_contains(strtolower($customer->status_fu), 'warm') ? 'table-warning' : '') }}">
-                                    <td>
-                                        <input type="checkbox" name="customer_ids[]" value="{{ $customer->id }}" class="customer-checkbox">
-                                    </td>
-                                    <td class="text-center">
-                                        @if(str_contains(strtolower($customer->status_fu), 'hot'))
-                                            <i class="fas fa-fire text-danger" title="Hot Lead - Priority Tinggi"></i>
-                                        @elseif(str_contains(strtolower($customer->status_fu), 'warm'))
-                                            <i class="fas fa-thermometer-half text-warning" title="Warm Lead - Priority Sedang"></i>
-                                        @else
-                                            <i class="fas fa-user text-secondary" title="Normal Lead"></i>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <strong>{{ $customer->nama }}</strong>
-                                            <br><small class="text-muted">{{ $customer->tanggal }} | {{ $customer->sheet_month }}</small>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="mb-1">
-                                            @if($customer->phone)
-                                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $customer->phone) }}" 
-                                                   target="_blank" class="btn btn-success btn-sm">
-                                                    <i class="fab fa-whatsapp"></i> {{ $customer->phone }}
-                                                </a>
-                                            @else
-                                                <span class="text-muted">No Phone</span>
-                                            @endif
-                                        </div>
-                                        @if($customer->email)
-                                            <div>
-                                                <small><i class="fas fa-envelope"></i> {{ $customer->email }}</small>
-                                            </div>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="mb-2">
-                                            <span class="badge 
-                                                @if(str_contains(strtolower($customer->status_fu), 'hot')) badge-danger
-                                                @elseif(str_contains(strtolower($customer->status_fu), 'warm')) badge-warning  
-                                                @else badge-secondary
-                                                @endif">
-                                                {{ $customer->status_fu }}
-                                            </span>
-                                        </div>
-                                        @if($customer->interest)
-                                            <small class="text-muted">
-                                                <i class="fas fa-heart"></i> {{ Str::limit($customer->interest, 20) }}
-                                            </small>
-                                        @endif
-                                        @if($customer->offer)
-                                            <br><small class="text-info">
-                                                <i class="fas fa-tag"></i> {{ Str::limit($customer->offer, 20) }}
-                                            </small>
-                                        @endif
-                                    </td>
-                                    @if(Auth::user()->isAdmin())
-                                    <td>
-                                        <span class="badge badge-info">{{ $customer->user->name ?? 'Unknown' }}</span>
-                                    </td>
-                                    @endif
-                                    <td class="text-center">
-                                        <span class="badge badge-primary">{{ $customer->fu_jumlah }}x</span>
-                                    </td>
-                                    <td>
-                                        @if($customer->notes)
-                                            <div class="text-truncate" style="max-width: 150px;" title="{{ $customer->notes }}">
-                                                {{ Str::limit($customer->notes, 50) }}
-                                            </div>
-                                        @else
-                                            <span class="text-muted">No notes</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="btn-group-vertical" role="group">
-                                            @if($customer->phone)
-                                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $customer->phone) }}" 
-                                                   target="_blank" class="btn btn-success btn-sm mb-1">
-                                                    <i class="fab fa-whatsapp"></i> WA
-                                                </a>
-                                            @endif
-                                            <a href="{{ route('customers.show', $customer) }}" class="btn btn-info btn-sm mb-1">
-                                                <i class="fas fa-eye"></i> Detail
-                                            </a>
-                                            <a href="{{ route('customers.edit', $customer) }}" class="btn btn-warning btn-sm">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="{{ Auth::user()->isAdmin() ? '9' : '8' }}" class="text-center py-4">
-                                        <div class="text-center">
-                                            <i class="fas fa-calendar-check fa-3x text-gray-300 mb-3"></i>
-                                            <h5 class="text-gray-500">Tidak ada follow-up hari ini</h5>
-                                            <p class="text-muted">Semua customer sudah ter-follow-up atau belum ada yang dijadwalkan hari ini.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </form>
-            </div>
-        </div>
+        </form>
     </div>
 </div>
 
-<!-- Bulk Action Modal -->
-<div class="modal fade" id="bulkActionModal" tabindex="-1">
+@if($customers->count() > 0)
+<!-- Customer List untuk Follow-up Hari Ini -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="bi bi-list-check"></i> Daftar Follow-up Hari Ini
+            <span class="badge bg-info ms-2">{{ $customers->count() }} customer</span>
+        </h5>
+    </div>
+    <div class="card-body">
+        <!-- Prioritas Tinggi: Hot Closeable -->
+        @php $hotCloseableCustomers = $customers->where('status_fu', 'hot(closeable)'); @endphp
+        @if($hotCloseableCustomers->count() > 0)
+        <div class="mb-4">
+            <h6 class="text-danger mb-3">
+                <i class="bi bi-exclamation-triangle-fill"></i> PRIORITAS TINGGI - Hot (Closeable)
+                <span class="badge bg-danger">{{ $hotCloseableCustomers->count() }}</span>
+            </h6>
+            <div class="row">
+                @foreach($hotCloseableCustomers as $customer)
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card border-danger shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title mb-0 text-danger">{{ $customer->nama }}</h6>
+                                <span class="badge bg-danger">HOT CLOSEABLE</span>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-telephone"></i> {{ $customer->phone ?: 'No Phone' }}
+                                </small>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-envelope"></i> {{ $customer->email ?: 'No Email' }}
+                                </small>
+                            </div>
+                            
+                            @if(Auth::user()->isAdmin())
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-person-badge"></i> {{ $customer->user->name }}
+                                </small>
+                            </div>
+                            @endif
+                            
+                            @if($customer->interest)
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-heart"></i> {{ Str::limit($customer->interest, 30) }}
+                                </small>
+                            </div>
+                            @endif
+                            
+                            @if($customer->offer)
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-gift"></i> {{ Str::limit($customer->offer, 30) }}
+                                </small>
+                            </div>
+                            @endif
+                            
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-arrow-repeat"></i> FU ke-{{ $customer->fu_jumlah + 1 }} 
+                                    @if($customer->sheet_month)
+                                    | {{ $customer->sheet_month }}
+                                    @endif
+                                </small>
+                            </div>
+                            
+                            @if($customer->notes)
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <strong>Last Notes:</strong> {{ Str::limit($customer->notes, 60) }}
+                                </small>
+                            </div>
+                            @endif
+                            
+                            <div class="d-flex gap-1 flex-wrap">
+                                @if($customer->phone)
+                                <a href="{{ $customer->getWhatsAppUrl() }}" target="_blank" class="btn btn-success btn-sm">
+                                    <i class="bi bi-whatsapp"></i> WA
+                                </a>
+                                @endif
+                                @if($customer->email)
+                                <a href="mailto:{{ $customer->email }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-envelope"></i>
+                                </a>
+                                @endif
+                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ $customer->id }}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        <!-- Hot -->
+        @php $hotCustomers = $customers->where('status_fu', 'hot'); @endphp
+        @if($hotCustomers->count() > 0)
+        <div class="mb-4">
+            <h6 class="text-warning mb-3">
+                <i class="bi bi-fire"></i> Hot Leads
+                <span class="badge bg-warning text-dark">{{ $hotCustomers->count() }}</span>
+            </h6>
+            <div class="row">
+                @foreach($hotCustomers as $customer)
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card border-warning shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title mb-0">{{ $customer->nama }}</h6>
+                                <span class="badge bg-warning text-dark">HOT</span>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-telephone"></i> {{ $customer->phone ?: 'No Phone' }}
+                                </small>
+                            </div>
+                            
+                            @if(Auth::user()->isAdmin())
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-person-badge"></i> {{ $customer->user->name }}
+                                </small>
+                            </div>
+                            @endif
+                            
+                            @if($customer->interest || $customer->offer)
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    @if($customer->interest)
+                                    <i class="bi bi-heart"></i> {{ Str::limit($customer->interest, 25) }}
+                                    @endif
+                                    @if($customer->offer)
+                                    <br><i class="bi bi-gift"></i> {{ Str::limit($customer->offer, 25) }}
+                                    @endif
+                                </small>
+                            </div>
+                            @endif
+                            
+                            <div class="d-flex gap-1 flex-wrap">
+                                @if($customer->phone)
+                                <a href="{{ $customer->getWhatsAppUrl() }}" target="_blank" class="btn btn-success btn-sm">
+                                    <i class="bi bi-whatsapp"></i>
+                                </a>
+                                @endif
+                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ $customer->id }}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        <!-- Warm -->
+        @php $warmCustomers = $customers->whereIn('status_fu', ['warm', 'warm(potential)']); @endphp
+        @if($warmCustomers->count() > 0)
+        <div class="mb-4">
+            <h6 class="text-info mb-3">
+                <i class="bi bi-thermometer-half"></i> Warm Leads
+                <span class="badge bg-info">{{ $warmCustomers->count() }}</span>
+            </h6>
+            <div class="row">
+                @foreach($warmCustomers as $customer)
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card border-info shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title mb-0">{{ $customer->nama }}</h6>
+                                <span class="badge bg-info">{{ strtoupper($customer->status_fu) }}</span>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-telephone"></i> {{ $customer->phone ?: 'No Phone' }}
+                                </small>
+                            </div>
+                            
+                            @if(Auth::user()->isAdmin())
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-person-badge"></i> {{ $customer->user->name }}
+                                </small>
+                            </div>
+                            @endif
+                            
+                            <div class="d-flex gap-1 flex-wrap">
+                                @if($customer->phone)
+                                <a href="{{ $customer->getWhatsAppUrl() }}" target="_blank" class="btn btn-success btn-sm">
+                                    <i class="bi bi-whatsapp"></i>
+                                </a>
+                                @endif
+                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ $customer->id }}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        <!-- Normal -->
+        @php $normalCustomers = $customers->whereIn('status_fu', ['normal', 'normal(prospect)']); @endphp
+        @if($normalCustomers->count() > 0)
+        <div class="mb-4">
+            <h6 class="text-secondary mb-3">
+                <i class="bi bi-person"></i> Normal
+                <span class="badge bg-secondary">{{ $normalCustomers->count() }}</span>
+            </h6>
+            <div class="row">
+                @foreach($normalCustomers as $customer)
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card border-secondary shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title mb-0">{{ $customer->nama }}</h6>
+                                <span class="badge bg-secondary">{{ strtoupper($customer->status_fu) }}</span>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-telephone"></i> {{ $customer->phone ?: 'No Phone' }}
+                                </small>
+                            </div>
+                            
+                            @if(Auth::user()->isAdmin())
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-person-badge"></i> {{ $customer->user->name }}
+                                </small>
+                            </div>
+                            @endif
+                            
+                            <div class="d-flex gap-1 flex-wrap">
+                                @if($customer->phone)
+                                <a href="{{ $customer->getWhatsAppUrl() }}" target="_blank" class="btn btn-success btn-sm">
+                                    <i class="bi bi-whatsapp"></i>
+                                </a>
+                                @endif
+                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ $customer->id }}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+    </div>
+</div>
+
+<!-- Edit Modals -->
+@foreach($customers as $customer)
+<div class="modal fade" id="editModal{{ $customer->id }}" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Bulk Action - Follow-up Hari Ini</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            {{-- <form action="{{ route('dashboard.bulk-update') }}" method="POST">
+            <form method="POST" action="{{ route('customers.update', $customer) }}">
                 @csrf
+                @method('PUT')
+                <div class="modal-header">
+                    <h5 class="modal-title">Follow-up: {{ $customer->nama }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
                 <div class="modal-body">
-                    <input type="hidden" name="customer_ids" id="selectedCustomerIds">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> <strong>Follow-up hari ini untuk customer {{ $customer->nama }}</strong>
+                        <br><small>Update status dan catat hasil follow-up</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="status_fu{{ $customer->id }}" class="form-label">Update Status</label>
+                                <select name="status_fu" id="status_fu{{ $customer->id }}" class="form-select">
+                                    <option value="normal" {{ $customer->status_fu == 'normal' ? 'selected' : '' }}>Normal</option>
+                                    <option value="normal(prospect)" {{ $customer->status_fu == 'normal(prospect)' ? 'selected' : '' }}>Normal (Prospect)</option>
+                                    <option value="warm" {{ $customer->status_fu == 'warm' ? 'selected' : '' }}>Warm</option>
+                                    <option value="warm(potential)" {{ $customer->status_fu == 'warm(potential)' ? 'selected' : '' }}>Warm (Potential)</option>
+                                    <option value="hot" {{ $customer->status_fu == 'hot' ? 'selected' : '' }}>Hot</option>
+                                    <option value="hot(closeable)" {{ $customer->status_fu == 'hot(closeable)' ? 'selected' : '' }}>Hot (Closeable)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="followup_date{{ $customer->id }}" class="form-label">Next Follow-up</label>
+                                <input type="date" name="followup_date" id="followup_date{{ $customer->id }}" class="form-control" 
+                                       value="{{ now()->addDays(1)->format('Y-m-d') }}" min="{{ now()->format('Y-m-d') }}">
+                                <small class="text-muted">Kosongkan jika tidak perlu follow-up lagi</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Customer Contact Info -->
+                    <div class="mb-3">
+                        <h6>Info Kontak:</h6>
+                        <div class="bg-light p-2 rounded">
+                            <small>
+                                <strong>Phone:</strong> {{ $customer->phone ?: 'N/A' }}<br>
+                                <strong>Email:</strong> {{ $customer->email ?: 'N/A' }}<br>
+                                <strong>Interest:</strong> {{ $customer->interest ?: 'N/A' }}<br>
+                                <strong>FU Count:</strong> {{ $customer->fu_jumlah }}x
+                            </small>
+                        </div>
+                    </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">Pilih Aksi</label>
-                        <select name="action" id="bulkAction" class="form-select" required>
-                            <option value="">-- Pilih Aksi --</option>
-                            <option value="update_status">Update Status FU</option>
-                            <option value="update_followup">Update Tanggal Follow-up Berikutnya</option>
-                            <option value="add_notes">Tambah Catatan Follow-up</option>
-                        </select>
-                    </div>
-
-                    <div id="statusField" class="mb-3" style="display: none;">
-                        <label class="form-label">Status FU Baru</label>
-                        <select name="status_fu" class="form-select">
-                            <option value="normal">Normal</option>
-                            <option value="warm">Warm</option>
-                            <option value="hot">Hot</option>
-                            <option value="normal(prospect)">Normal (Prospect)</option>
-                            <option value="warm(potential)">Warm (Potential)</option>
-                            <option value="hot(closeable)">Hot (Closeable)</option>
-                        </select>
-                        <div class="form-text">Update status berdasarkan hasil follow-up hari ini</div>
-                    </div>
-
-                    <div id="followupField" class="mb-3" style="display: none;">
-                        <label class="form-label">Tanggal Follow-up Berikutnya</label>
-                        <input type="date" name="followup_date" class="form-control" min="{{ now()->addDay()->format('Y-m-d') }}">
-                        <div class="form-text">Jadwalkan follow-up berikutnya</div>
-                    </div>
-
-                    <div id="notesField" class="mb-3" style="display: none;">
-                        <label class="form-label">Catatan Follow-up</label>
-                        <textarea name="notes" class="form-control" rows="3" placeholder="Hasil follow-up hari ini..."></textarea>
-                        <div class="form-text">Catatan akan ditambahkan dengan timestamp</div>
+                        <label for="notes{{ $customer->id }}" class="form-label">Hasil Follow-up</label>
+                        <textarea name="notes" id="notes{{ $customer->id }}" class="form-control" rows="4" 
+                                  placeholder="Catat hasil follow-up: respon customer, next action, dll..." required></textarea>
+                        <small class="text-muted">Wajib diisi untuk follow-up hari ini</small>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Proses Follow-up</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Selesai Follow-up
+                    </button>
                 </div>
-            </form> --}}
+            </form>
         </div>
     </div>
 </div>
+@endforeach
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Select all checkbox functionality
-    const selectAllCheckbox = document.getElementById('selectAll');
-    const customerCheckboxes = document.querySelectorAll('.customer-checkbox');
-    
-    selectAllCheckbox.addEventListener('change', function() {
-        customerCheckboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
-        });
-    });
-
-    // Bulk action modal
-    const bulkAction = document.getElementById('bulkAction');
-    const statusField = document.getElementById('statusField');
-    const followupField = document.getElementById('followupField');
-    const notesField = document.getElementById('notesField');
-
-    bulkAction.addEventListener('change', function() {
-        // Hide all fields first
-        statusField.style.display = 'none';
-        followupField.style.display = 'none';
-        notesField.style.display = 'none';
-
-        // Show relevant field
-        switch(this.value) {
-            case 'update_status':
-                statusField.style.display = 'block';
-                break;
-            case 'update_followup':
-                followupField.style.display = 'block';
-                break;
-            case 'add_notes':
-                notesField.style.display = 'block';
-                break;
-        }
-    });
-
-    // Handle bulk action form submission
-    document.querySelector('#bulkActionModal form').addEventListener('submit', function(e) {
-        const selectedIds = Array.from(document.querySelectorAll('.customer-checkbox:checked'))
-                                .map(cb => cb.value);
-        
-        if (selectedIds.length === 0) {
-            e.preventDefault();
-            alert('Pilih minimal satu customer!');
-            return;
-        }
-
-        // Confirm action
-        const action = bulkAction.value;
-        let confirmMessage = `Anda akan melakukan ${action} untuk ${selectedIds.length} customer. Lanjutkan?`;
-        
-        if (!confirm(confirmMessage)) {
-            e.preventDefault();
-            return;
-        }
-
-        document.getElementById('selectedCustomerIds').value = JSON.stringify(selectedIds);
-    });
-
-    // Auto-refresh notification for new follow-ups
-    setInterval(function() {
-        // Check if there are new follow-ups (you can implement this via AJAX)
-        // This is just a placeholder for the functionality
-    }, 300000); // Check every 5 minutes
-});
-</script>
+@else
+<!-- Empty State -->
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-calendar-check fs-1 text-muted"></i>
+        <h4 class="text-muted mt-3">Tidak Ada Follow-up Hari Ini</h4>
+        <p class="text-muted">
+            @if(collect($filters)->filter()->count() > 0)
+                Tidak ada customer dengan filter yang dipilih untuk follow-up hari ini.
+                <br><a href="{{ route('dashboard.followup-today') }}">Reset filter</a> untuk melihat semua.
+            @else
+                Tidak ada customer yang dijadwalkan untuk follow-up hari ini.
+                <br>Kembali ke <a href="{{ route('dashboard') }}">dashboard</a> untuk mengatur jadwal follow-up.
+            @endif
+        </p>
+    </div>
+</div>
+@endif
 
 @endsection
+
+@push('scripts')
+<script>
+// Auto-submit form on filter change
+document.querySelectorAll('#filterForm select').forEach(select => {
+    select.addEventListener('change', function() {
+        clearTimeout(window.filterTimeout);
+        window.filterTimeout = setTimeout(() => {
+            document.getElementById('filterForm').submit();
+        }, 300);
+    });
+});
+
+// Search on enter
+document.getElementById('search').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        document.getElementById('filterForm').submit();
+    }
+});
+
+// Set default next followup date based on status
+document.querySelectorAll('select[name="status_fu"]').forEach(select => {
+    select.addEventListener('change', function() {
+        const status = this.value;
+        const modalId = this.id.replace('status_fu', '');
+        const followupInput = document.getElementById('followup_date' + modalId);
+        
+        // Set suggested next followup based on status
+        let daysToAdd = 3; // default
+        
+        switch(status) {
+            case 'hot(closeable)':
+                daysToAdd = 1; // tomorrow
+                break;
+            case 'hot':
+                daysToAdd = 2;
+                break;
+            case 'warm(potential)':
+                daysToAdd = 3;
+                break;
+            case 'warm':
+                daysToAdd = 5;
+                break;
+            case 'normal(prospect)':
+                daysToAdd = 7;
+                break;
+            case 'normal':
+                daysToAdd = 14;
+                break;
+        }
+        
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + daysToAdd);
+        followupInput.value = nextDate.toISOString().split('T')[0];
+    });
+});
+
+// Add confirmation for completing followup
+document.querySelectorAll('form').forEach(form => {
+    if (form.action.includes('customers')) {
+        form.addEventListener('submit', function(e) {
+            const customerName = this.querySelector('.modal-title').textContent.split(': ')[1];
+            const notes = this.querySelector('textarea[name="notes"]').value;
+            
+            if (!notes.trim()) {
+                e.preventDefault();
+                alert('Hasil follow-up wajib diisi!');
+                return;
+            }
+            
+            if (!confirm(`Yakin sudah selesai follow-up dengan ${customerName}?`)) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
+@endpush
+
+@push('styles')
+<style>
+.border-danger {
+    border-color: #dc3545 !important;
+}
+
+.border-warning {
+    border-color: #ffc107 !important;
+}
+
+.border-info {
+    border-color: #17a2b8 !important;
+}
+
+.border-secondary {
+    border-color: #6c757d !important;
+}
+
+.shadow-sm {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease-in-out;
+}
+</style>
+@endpush
