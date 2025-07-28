@@ -31,12 +31,12 @@ Route::middleware('auth')->group(function () {
         ->name('customer.mark-completed');
     
     // Admin only routes
-    // Route::middleware('admin')->group(function () {
-    //     Route::get('/admin/activity-logs', [ActivityLogController::class, 'index'])
-    //         ->name('admin.activity-logs');
-    //     Route::get('/admin/customer/{customer}/logs', [ActivityLogController::class, 'customerLogs'])
-    //         ->name('admin.customer-logs');
-    // });
+    Route::middleware('admin')->group(function () {
+        Route::get('/admin/activity-logs', [ActivityLogController::class, 'index'])
+            ->name('admin.activity-logs');
+        Route::get('/admin/customer/{customer}/logs', [ActivityLogController::class, 'customerLogs'])
+            ->name('admin.customer-logs');
+    });
 });
 
 require __DIR__.'/auth.php';
