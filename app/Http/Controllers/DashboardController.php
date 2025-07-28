@@ -142,6 +142,9 @@ class DashboardController extends Controller
             $query->where('sheet_month', $request->month);
         }
 
+
+        // dd($query->toSql(), $query->getBindings());
+
         // Agent filter (admin only)
         if ($request->has('agent') && $request->agent !== '' && $user->isAdmin()) {
             $query->where('user_id', $request->agent);
