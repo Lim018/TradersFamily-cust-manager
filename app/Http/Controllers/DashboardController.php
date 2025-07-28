@@ -185,4 +185,32 @@ class DashboardController extends Controller
         
         return back()->with('success', 'Customer updated successfully');
     }
+
+    public function markCompleted(Customer $customer)
+    {
+        $user = Auth::user();
+        
+        // Pastikan agent hanya bisa update customer miliknya
+        if ($user->role === 'agent' && $customer->user_id !== $user->id) {
+            abort(403);
+        }
+        
+        $oldData = $customer->toArray();
+        
+        $customer->update([
+            'fu_checkbox' => true
+        ]);
+        
+        // Log aktivitas
+        ActivityLog::create([
+            'user_id' => $user->id,
+            'customer_id' => $customer->id,
+            'action' => 'status_changed',
+            'description' => 'Marked follow-up as completed',
+            'old_data' => $oldData,
+            'new_data' => $customer->fresh()->toArray()
+        ]);
+        
+        return back()->with('success', 'Follow-up marked as completed');
+    }
 }
