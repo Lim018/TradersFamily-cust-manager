@@ -1,433 +1,303 @@
-@extends('layouts.app')
-
-@section('title', 'Dashboard Admin')
-
-@section('content')
-<div class="container-fluid">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0 text-gray-800">Dashboard Admin</h1>
-            <p class="mb-0 text-muted">Monitoring & Analytics</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - CustomerSync</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Sidebar -->
+    <div class="flex h-screen">
+        <div class="w-64 bg-white shadow-lg">
+            <div class="p-6">
+                <h1 class="text-xl font-bold text-gray-800">CustomerSync</h1>
+                <p class="text-sm text-gray-600">Admin Panel</p>
+            </div>
+            
+            <nav class="mt-6">
+                <a href="{{ route('dashboard') }}" class="flex items-center px-6 py-3 text-gray-700 bg-blue-50 border-r-2 border-blue-500">
+                    <i class="fas fa-chart-bar mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="{{ route('admin.activity-logs') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50">
+                    <i class="fas fa-history mr-3"></i>
+                    Activity Logs
+                </a>
+                {{-- <a href="{{ route('followup.today') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50">
+                    <i class="fas fa-calendar-check mr-3"></i>
+                    Follow-up Hari Ini
+                    @if($stats['followup_today'] > 0)
+                        <span class="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">{{ $stats['followup_today'] }}</span>
+                    @endif
+                </a> --}}
+            </nav>
+            
+            <!-- Logout -->
+            <div class="absolute bottom-4 left-0 right-0 px-6">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="flex items-center w-full px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">
+                        <i class="fas fa-sign-out-alt mr-3"></i>
+                        Logout
+                    </button>
+                </form>
+            </div>
         </div>
-        <div>
-            <a href="{{ route('dashboard.followup-today') }}" class="btn btn-warning me-2">
-                <i class="fas fa-clock"></i> Follow-up Hari Ini
-            </a>
-            <a href="{{ route('dashboard.export', request()->query()) }}" class="btn btn-success">
-                <i class="fas fa-download"></i> Export CSV
-            </a>
-        </div>
-    </div>
 
-    <!-- Stats Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Customer</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total_customers'] }}</div>
+        <!-- Main Content -->
+        <div class="flex-1 overflow-y-auto">
+            <div class="p-6">
+                <!-- Header -->
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Admin Dashboard</h2>
+                    <p class="text-gray-600">Monitoring dan statistik seluruh agent</p>
+                </div>
+
+                <!-- Overview Statistics -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="flex items-center">
+                            <div class="p-3 bg-blue-100 rounded-full">
+                                <i class="fas fa-users text-blue-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-600">Total Customer</p>
+                                <p class="text-2xl font-semibold">{{ $stats['total_customers'] }}</p>
+                            </div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="flex items-center">
+                            <div class="p-3 bg-green-100 rounded-full">
+                                <i class="fas fa-user-tie text-green-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-600">Total Agent</p>
+                                <p class="text-2xl font-semibold">{{ $stats['total_agents'] }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="flex items-center">
+                            <div class="p-3 bg-yellow-100 rounded-full">
+                                <i class="fas fa-calendar-check text-yellow-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-600">Follow-up Hari Ini</p>
+                                <p class="text-2xl font-semibold">{{ $stats['followup_today'] }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="flex items-center">
+                            <div class="p-3 bg-purple-100 rounded-full">
+                                <i class="fas fa-handshake text-purple-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-600">Closed Deals</p>
+                                <p class="text-2xl font-semibold">{{ $stats['closed_deals'] }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Agent</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total_agents'] }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-user-tie fa-2x text-gray-300"></i>
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <!-- Status Distribution Chart -->
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Status Distribution</h3>
+                        <div class="relative h-64">
+                            <canvas id="statusChart"></canvas>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Closed Deals</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['closed_deals'] }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-handshake fa-2x text-gray-300"></i>
+                    <!-- Agent Performance Chart -->
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Customer per Agent</h3>
+                        <div class="relative h-64">
+                            <canvas id="agentChart"></canvas>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Avg. Customer/Agent</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['avg_customers_per_agent'] }}</div>
+                <!-- Agent Performance Table -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Performance Agent</h3>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Agent</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Customer</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Normal</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Warm</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hot</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Closed</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Conversion Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($agentStats as $agent)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                                <span class="text-blue-600 font-medium text-sm">{{ substr($agent->name, 0, 1) }}</span>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900">{{ $agent->name }}</div>
+                                                @if($agent->agent_code)
+                                                    <div class="text-sm text-gray-500">{{ $agent->agent_code }}</div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">{{ $agent->customers_count }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">{{ $agent->normal_count }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">{{ $agent->warm_count }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">{{ $agent->hot_count }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">{{ $agent->closed_count }}</td>
+                                    <td class="px-6 py-4">
+                                        @php
+                                            $conversionRate = $agent->customers_count > 0 ? round(($agent->closed_count / $agent->customers_count) * 100, 1) : 0;
+                                        @endphp
+                                        <div class="flex items-center">
+                                            <div class="flex-1 bg-gray-200 rounded-full h-2 mr-2">
+                                                <div class="bg-green-600 h-2 rounded-full" style="width: {{ $conversionRate }}%"></div>
+                                            </div>
+                                            <span class="text-sm text-gray-900">{{ $conversionRate }}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="mt-8 bg-white rounded-lg shadow">
+                    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-medium text-gray-900">Recent Activity</h3>
+                        <a href="{{ route('admin.activity-logs') }}" class="text-blue-600 hover:text-blue-800 text-sm">
+                            View All <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="divide-y divide-gray-200">
+                        @forelse(\App\Models\ActivityLog::with(['user', 'customer'])->latest()->take(5)->get() as $log)
+                        <div class="px-6 py-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-blue-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-gray-900">
+                                        <span class="font-medium">{{ $log->user->name }}</span>
+                                        {{ $log->description }}
+                                        <span class="font-medium">{{ $log->customer->nama ?? 'Unknown Customer' }}</span>
+                                    </p>
+                                    <p class="text-xs text-gray-500">{{ $log->created_at->diffForHumans() }}</p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        @empty
+                        <div class="px-6 py-8 text-center text-gray-500">
+                            No recent activity
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Charts Row -->
-    <div class="row mb-4">
-        <!-- Agent Performance Chart -->
-        <div class="col-lg-8">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Agent Performance</h6>
-                </div>
-                <div class="card-body">
-                    <canvas id="agentChart" height="100"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Status Distribution -->
-        <div class="col-lg-4">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Status Distribution</h6>
-                </div>
-                <div class="card-body">
-                    <canvas id="statusChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Monthly Trends -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Monthly Trends</h6>
-                </div>
-                <div class="card-body">
-                    <canvas id="monthlyChart" height="80"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filters -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Filter Data</h6>
-        </div>
-        <div class="card-body">
-            <form method="GET" action="{{ route('dashboard') }}" class="row g-3">
-                <div class="col-md-2">
-                    <label class="form-label">Status FU</label>
-                    <select name="status" class="form-select">
-                        <option value="">Semua Status</option>
-                        <option value="normal" {{ $filters['status'] == 'normal' ? 'selected' : '' }}>Normal</option>
-                        <option value="warm" {{ $filters['status'] == 'warm' ? 'selected' : '' }}>Warm</option>
-                        <option value="hot" {{ $filters['status'] == 'hot' ? 'selected' : '' }}>Hot</option>
-                        <option value="normal(prospect)" {{ $filters['status'] == 'normal(prospect)' ? 'selected' : '' }}>Normal (Prospect)</option>
-                        <option value="warm(potential)" {{ $filters['status'] == 'warm(potential)' ? 'selected' : '' }}>Warm (Potential)</option>
-                        <option value="hot(closeable)" {{ $filters['status'] == 'hot(closeable)' ? 'selected' : '' }}>Hot (Closeable)</option>
-                    </select>
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label">Bulan</label>
-                    <select name="month" class="form-select">
-                        <option value="">Semua Bulan</option>
-                        @foreach($filterOptions['availableMonths'] as $month)
-                            <option value="{{ $month }}" {{ $filters['month'] == $month ? 'selected' : '' }}>
-                                {{ $month }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label">Agent</label>
-                    <select name="agent" class="form-select">
-                        <option value="">Semua Agent</option>
-                        @foreach($filterOptions['availableAgents'] as $agent)
-                            <option value="{{ $agent->id }}" {{ $filters['agent'] == $agent->id ? 'selected' : '' }}>
-                                {{ $agent->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label">Follow-up Status</label>
-                    <select name="followup_status" class="form-select">
-                        <option value="">Semua</option>
-                        <option value="today" {{ $filters['followup_status'] == 'today' ? 'selected' : '' }}>Hari Ini</option>
-                        <option value="overdue" {{ $filters['followup_status'] == 'overdue' ? 'selected' : '' }}>Terlambat</option>
-                        <option value="upcoming" {{ $filters['followup_status'] == 'upcoming' ? 'selected' : '' }}>Mendatang</option>
-                        <option value="no_followup" {{ $filters['followup_status'] == 'no_followup' ? 'selected' : '' }}>Belum Ada FU</option>
-                    </select>
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label">Pencarian</label>
-                    <input type="text" name="search" class="form-control" placeholder="Nama, Email, Phone" value="{{ $filters['search'] }}">
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label">Closing Status</label>
-                    <select name="closing_status" class="form-select">
-                        <option value="">Semua</option>
-                        <option value="closed" {{ $filters['closing_status'] == 'closed' ? 'selected' : '' }}>Sudah Closing</option>
-                        <option value="open" {{ $filters['closing_status'] == 'open' ? 'selected' : '' }}>Belum Closing</option>
-                    </select>
-                </div>
-
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary">Filter</button>
-                    <a href="{{ route('dashboard') }}" class="btn btn-secondary">Reset</a>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Agents Performance Table -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Agent Performance Detail</h6>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Agent Name</th>
-                            <th>Total Customer</th>
-                            <th>Hot Leads</th>
-                            <th>Closed Deals</th>
-                            <th>Follow-up Hari Ini</th>
-                            <th>Conversion Rate</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($agents as $agent)
-                            @php
-                                $totalCustomers = $agent->customers->count();
-                                $conversionRate = $totalCustomers > 0 ? round(($agent->customers->whereNotNull('tanggal_closing')->where('tanggal_closing', '!=', '')->count() / $totalCustomers) * 100, 1) : 0;
-                            @endphp
-                            <tr>
-                                <td>
-                                    <strong>{{ $agent->name }}</strong>
-                                    <br><small class="text-muted">{{ $agent->email }}</small>
-                                </td>
-                                <td>
-                                    <span class="badge badge-primary">{{ $totalCustomers }}</span>
-                                </td>
-                                <td>
-                                    <span class="badge badge-danger">
-                                        {{ $agent->customers->where('status_fu', 'hot')->count() + $agent->customers->where('status_fu', 'hot(closeable)')->count() }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge badge-success">
-                                        {{ $agent->customers->whereNotNull('tanggal_closing')->where('tanggal_closing', '!=', '')->count() }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge badge-warning">
-                                        {{ $agent->customers->where('followup_date', today())->count() }}
-                                    </span>
-                                </td>
-                                <td>{{ $conversionRate }}%</td>
-                                <td>
-                                    <a href="{{ route('dashboard', ['agent' => $agent->id]) }}" class="btn btn-info btn-sm">
-                                        <i class="fas fa-eye"></i> Detail
-                                    </a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="card shadow">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Follow-up Summary</h6>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-3 text-center">
-                    <div class="border-left-warning p-3">
-                        <h5 class="text-warning">{{ $stats['followup_today'] }}</h5>
-                        <small>Follow-up Hari Ini</small>
-                    </div>
-                </div>
-                <div class="col-md-3 text-center">
-                    <div class="border-left-danger p-3">
-                        <h5 class="text-danger">{{ $stats['followup_overdue'] }}</h5>
-                        <small>Follow-up Terlambat</small>
-                    </div>
-                </div>
-                <div class="col-md-3 text-center">
-                    <div class="border-left-info p-3">
-                        <h5 class="text-info">{{ $stats['followup_upcoming'] }}</h5>
-                        <small>Follow-up Mendatang</small>
-                    </div>
-                </div>
-                <div class="col-md-3 text-center">
-                    <div class="border-left-success p-3">
-                        <h5 class="text-success">{{ $stats['with_phone'] }}</h5>
-                        <small>Customer dengan Phone</small>
+                        @endforelse
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Agent Performance Chart
-    const agentCtx = document.getElementById('agentChart').getContext('2d');
-    const agentData = @json($agentPerformance);
-    
-    new Chart(agentCtx, {
-        type: 'bar',
-        data: {
-            labels: agentData.map(agent => agent.name),
-            datasets: [{
-                label: 'Total Customer',
-                data: agentData.map(agent => agent.total_customers),
-                backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }, {
-                label: 'Hot Leads',
-                data: agentData.map(agent => agent.hot_leads),
-                backgroundColor: 'rgba(255, 99, 132, 0.8)',
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 1
-            }, {
-                label: 'Closed Deals',
-                data: agentData.map(agent => agent.closed_deals),
-                backgroundColor: 'rgba(75, 192, 192, 0.8)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-
-    // Status Distribution Pie Chart
-    const statusCtx = document.getElementById('statusChart').getContext('2d');
-    new Chart(statusCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Normal', 'Warm', 'Hot'],
-            datasets: [{
-                data: [
-                    {{ $stats['normal'] + $stats['normal_prospect'] }},
-                    {{ $stats['warm'] + $stats['warm_potential'] }},
-                    {{ $stats['hot'] + $stats['hot_closeable'] }}
-                ],
-                backgroundColor: [
-                    'rgba(108, 117, 125, 0.8)',
-                    'rgba(255, 193, 7, 0.8)',
-                    'rgba(220, 53, 69, 0.8)'
-                ],
-                borderColor: [
-                    'rgba(108, 117, 125, 1)',
-                    'rgba(255, 193, 7, 1)',
-                    'rgba(220, 53, 69, 1)'
-                ],
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }
-    });
-
-    // Monthly Trends Chart
-    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-    const monthlyData = @json($monthlyTrends);
-    
-    new Chart(monthlyCtx, {
-        type: 'line',
-        data: {
-            labels: monthlyData.map(item => item.sheet_month),
-            datasets: [{
-                label: 'Total Customer',
-                data: monthlyData.map(item => item.total),
-                borderColor: 'rgba(54, 162, 235, 1)',
-                backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                tension: 0.4,
-                fill: true
-            }, {
-                label: 'Hot Leads',
-                data: monthlyData.map(item => item.hot_leads),
-                borderColor: 'rgba(255, 99, 132, 1)',
-                backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                tension: 0.4,
-                fill: false
-            }, {
-                label: 'Closed Deals',
-                data: monthlyData.map(item => item.closed_deals),
-                borderColor: 'rgba(75, 192, 192, 1)',
-                backgroundColor: 'rgba(75, 192, 192, 0.1)',
-                tension: 0.4,
-                fill: false
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
+    <script>
+        // Status Distribution Chart
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {!! json_encode($chartData['status_distribution']['labels']) !!},
+                datasets: [{
+                    data: {!! json_encode($chartData['status_distribution']['data']) !!},
+                    backgroundColor: [
+                        '#6B7280',
+                        '#F59E0B',
+                        '#EF4444'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
             },
-            plugins: {
-                legend: {
-                    position: 'top'
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
                 }
             }
-        }
-    });
-});
-</script>
+        });
 
-@endsection
+        // Agent Performance Chart
+        const agentCtx = document.getElementById('agentChart').getContext('2d');
+        new Chart(agentCtx, {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($chartData['agent_performance']['labels']) !!},
+                datasets: [{
+                    label: 'Total Customers',
+                    data: {!! json_encode($chartData['agent_performance']['data']) !!},
+                    backgroundColor: '#3B82F6',
+                    borderColor: '#2563EB',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
+    @if(session('success'))
+        <div class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-50">
+            {{ session('success') }}
+        </div>
+        <script>
+            setTimeout(() => {
+                document.querySelector('.fixed.top-4.right-4').remove();
+            }, 3000);
+        </script>
+    @endif
+</body>
+</html>

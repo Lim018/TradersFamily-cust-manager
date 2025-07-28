@@ -9,9 +9,43 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+    use HasFactory, Notifiable;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'agent_code'
+        'name',
+        'email',
+        'password',
+        'role',
+        'agent_code',
     ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
 
     public function customers()
     {
@@ -23,13 +57,21 @@ class User extends Authenticatable
         return $this->hasMany(ActivityLog::class);
     }
 
+    // Check if user is admin
     public function isAdmin()
     {
         return $this->role === 'admin';
     }
 
+    // Check if user is agent
     public function isAgent()
     {
         return $this->role === 'agent';
+    }
+
+    // Get agent display name
+    public function getAgentDisplayAttribute()
+    {
+        return $this->agent_code ? "{$this->name} ({$this->agent_code})" : $this->name;
     }
 }
