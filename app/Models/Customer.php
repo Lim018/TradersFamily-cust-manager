@@ -2,25 +2,44 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Customer extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'user_id', 'tanggal', 'regis', 'nama', 'email', 'phone',
-        'first_visit', 'interest', 'offer', 'status_fu', 'tanggal_closing',
-        'report', 'alasan_depo_decline', 'fu_jumlah', 'fu_ke_1',
-        'fu_checkbox', 'next_fu', 'fu_dates', 'notes', 'followup_date', 'sheet_month'
+        'user_id',
+        'tanggal',
+        'regis',
+        'nama',
+        'email',
+        'phone',
+        'first_visit',
+        'interest',
+        'offer',
+        'status_fu',
+        'tanggal_closing',
+        'report',
+        'alasan_depo_decline',
+        'fu_jumlah',
+        'fu_ke_1',
+        'fu_checkbox',
+        'next_fu',
+        'fu_dates',
+        'sheet_month',
+        'notes',
+        'followup_date'
     ];
 
     protected $casts = [
-        'tanggal' => 'string',
-        'tanggal_closing' => 'string',
-        'fu_ke_1' => 'string',
-        'next_fu' => 'string',
-        'followup_date' => 'date',
+        'fu_dates' => 'array',
         'fu_checkbox' => 'boolean',
-        'fu_dates' => 'array'
+        'followup_date' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 
     public function user()
@@ -33,13 +52,98 @@ class Customer extends Model
         return $this->hasMany(ActivityLog::class);
     }
 
-    // Helper method for WhatsApp redirect
-    public function getWhatsAppUrl()
+    // Accessor untuk WhatsApp link
+    public function getWhatsappLinkAttribute()
     {
+        if (!$this->phone) {
+            return null;
+        }
+        
         $phone = preg_replace('/[^0-9]/', '', $this->phone);
+        
+        // Convert phone number format
         if (substr($phone, 0, 1) === '0') {
             $phone = '62' . substr($phone, 1);
+        } elseif (substr($phone, 0, 2) !== '62') {
+            $phone = '62' . $phone;
         }
-        return "https://wa.me/{$phone}";
+        
+        $message = "Halo {$this->nama}, saya dari tim sales ingin melakukan follow up terkait interest Anda.";
+        
+        return "https://wa.me/{$phone}?text=" . urlencode($message);
+    }
+
+    // Accessor untuk status display
+    public function getStatusDisplayAttribute()
+    {
+        $statusMap = [
+            'normal' => 'Normal',
+            'warm' => 'Warm',
+            'hot' => 'Hot',
+            'normal(prospect)' => 'Normal (Prospect)',
+            'warm(potential)' => 'Warm (Potential)',
+            'hot(closeable)' => 'Hot (Closeable)'
+        ];
+
+        return $statusMap[$this->status_fu] ?? $this->status_fu;
+    }
+
+    // Accessor untuk status badge color
+    public function getStatusColorAttribute()
+    {
+        $colorMap = [
+            'normal' => 'bg-gray-100 text-gray-800',
+            'warm' => 'bg-yellow-100 text-yellow-800',
+            'hot' => 'bg-red-100 text-red-800',
+            'normal(prospect)' => 'bg-blue-100 text-blue-800',
+            'warm(potential)' => 'bg-orange-100 text-orange-800',
+            'hot(closeable)' => 'bg-green-100 text-green-800'
+        ];
+
+        return $colorMap[$this->status_fu] ?? 'bg-gray-100 text-gray-800';
+    }
+
+    // Check if follow up is overdue
+    public function getIsOverdueAttribute()
+    {
+        return $this->followup_date && $this->followup_date->isPast() && !$this->fu_checkbox;
+    }
+
+    // Check if follow up is today
+    public function getIsFollowupTodayAttribute()
+    {
+        return $this->followup_date && $this->followup_date->isToday();
+    }
+
+    // Scope untuk filter
+    public function scopeByStatus($query, $status)
+    {
+        $statusGroups = [
+            'normal' => ['normal', 'normal(prospect)'],
+            'warm' => ['warm', 'warm(potential)'],
+            'hot' => ['hot', 'hot(closeable)']
+        ];
+
+        if (isset($statusGroups[$status])) {
+            return $query->whereIn('status_fu', $statusGroups[$status]);
+        }
+
+        return $query->where('status_fu', $status);
+    }
+
+    public function scopeFollowupToday($query)
+    {
+        return $query->whereDate('followup_date', Carbon::today());
+    }
+
+    public function scopeOverdue($query)
+    {
+        return $query->where('followup_date', '<', Carbon::today())
+                    ->where('fu_checkbox', false);
+    }
+
+    public function scopeByAgent($query, $userId)
+    {
+        return $query->where('user_id', $userId);
     }
 }
