@@ -1,33 +1,42 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\WebhookController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.login');
 });
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+// Webhook endpoint (tidak perlu authentication)
+// Route::post('/api/spreadsheet-update', [WebhookController::class, 'handleSpreadsheetUpdate'])
+//     ->name('webhook.spreadsheet-update');
+
+Route::middleware('auth')->group(function () {
+    // Profile routes
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Dashboard routes
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/followup-today', [DashboardController::class, 'followupToday'])->name('followup.today');
-    Route::put('/customers/{customer}', [CustomerController::class, 'update'])->name('customers.update');
+    
+    // Customer management routes
+    Route::patch('/dashboard/customer/{customer}', [DashboardController::class, 'updateCustomer'])
+        ->name('customer.update');
+    Route::patch('/customer/{customer}/mark-completed', [DashboardController::class, 'markCompleted'])
+        ->name('customer.mark-completed');
     
     // Admin only routes
-    Route::middleware(['admin'])->group(function () {
-        Route::get('/admin/activity-logs', [AdminController::class, 'activityLogs'])->name('admin.activity-logs');
-        Route::get('/admin/statistics', [AdminController::class, 'statistics'])->name('admin.statistics');
+    // Route::middleware('admin')->group(function () {
+    //     Route::get('/admin/activity-logs', [ActivityLogController::class, 'index'])
+    //         ->name('admin.activity-logs');
+    //     Route::get('/admin/customer/{customer}/logs', [ActivityLogController::class, 'customerLogs'])
+    //         ->name('admin.customer-logs');
+    // });
 });
-
-// Route::get('/dashboard', function () {
-//     return view('dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
-
-// Route::middleware('auth')->group(function () {
-//     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-//     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-//     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-// });
 
 require __DIR__.'/auth.php';
