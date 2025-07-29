@@ -13,7 +13,7 @@
     <div class="flex h-screen">
         <div class="w-64 bg-white shadow-lg">
             <div class="p-6">
-                <h1 class="text-xl font-bold text-gray-800">CustomerSync</h1>
+                <h1 class="text-xl font-bold text-gray-800">Traders Family</h1>
                 <p class="text-sm text-gray-600">Admin Panel</p>
             </div>
             
@@ -82,7 +82,7 @@
                         </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-lg shadow">
+                    {{-- <div class="bg-white p-6 rounded-lg shadow">
                         <div class="flex items-center">
                             <div class="p-3 bg-yellow-100 rounded-full">
                                 <i class="fas fa-calendar-check text-yellow-600"></i>
@@ -104,7 +104,7 @@
                                 <p class="text-2xl font-semibold">{{ $stats['closed_deals'] }}</p>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
 
                 <!-- Charts Row -->
