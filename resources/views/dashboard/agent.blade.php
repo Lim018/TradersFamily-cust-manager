@@ -12,7 +12,7 @@
     <div class="flex h-screen">
         <div class="w-64 bg-white shadow-lg">
             <div class="p-6">
-                <h1 class="text-xl font-bold text-gray-800">CustomerSync</h1>
+                <h1 class="text-xl font-bold text-gray-800">Traders Family</h1>
                 <p class="text-sm text-gray-600">Agent: {{ Auth::user()->name }}</p>
             </div>
             
@@ -67,12 +67,36 @@
 
                     <div class="bg-white p-6 rounded-lg shadow">
                         <div class="flex items-center">
+                            <div class="p-3 bg-grey-100 rounded-full">
+                                <i class="fas fa-thermometer-half text-grey-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-600">Normal</p>
+                                <p class="text-2xl font-semibold">{{ $stats['normal_status']}}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="flex items-center">
                             <div class="p-3 bg-yellow-100 rounded-full">
                                 <i class="fas fa-thermometer-half text-yellow-600"></i>
                             </div>
                             <div class="ml-4">
-                                <p class="text-sm text-gray-600">Warm/Hot</p>
-                                <p class="text-2xl font-semibold">{{ $stats['warm_status'] + $stats['hot_status'] }}</p>
+                                <p class="text-sm text-gray-600">Warm</p>
+                                <p class="text-2xl font-semibold">{{ $stats['warm_status'] }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="flex items-center">
+                            <div class="p-3 bg-red-100 rounded-full">
+                                <i class="fas fa-thermometer-half text-red-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-600">Hot</p>
+                                <p class="text-2xl font-semibold">{{ $stats['hot_status'] }}</p>
                             </div>
                         </div>
                     </div>
