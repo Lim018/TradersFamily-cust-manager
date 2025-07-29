@@ -13,7 +13,7 @@
     <div class="flex h-screen">
         <div class="w-64 bg-white shadow-lg">
             <div class="p-6">
-                <h1 class="text-xl font-bold text-gray-800">CustomerSync</h1>
+                <h1 class="text-xl font-bold text-gray-800">Traders Family</h1>
                 <p class="text-sm text-gray-600">Admin Panel</p>
             </div>
             
