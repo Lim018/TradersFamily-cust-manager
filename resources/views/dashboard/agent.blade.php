@@ -567,7 +567,7 @@
             document.getElementById('editModal').classList.add('hidden');
         }
         
-        document.getElementById('editModal').addEventListener('click', function(e) {
+-        document.getElementById('editModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeEditModal();
             }
