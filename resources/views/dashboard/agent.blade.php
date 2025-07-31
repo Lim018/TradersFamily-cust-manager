@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agent Dashboard - Traders Family</title>
+    <title>Agent Dashboard - CustomerSync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@
         }
         
         .btn-primary {
-            background: #4B5563; /* Neutral dark gray */
+            background: #4B5563;
             border: none;
             transition: all 0.2s ease;
             font-weight: 500;
@@ -40,7 +40,7 @@
         }
         
         .btn-primary:hover {
-            background: #374151; /* Darker neutral gray on hover */
+            background: #374151;
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(55, 65, 81, 0.2);
         }
@@ -221,7 +221,7 @@
             <div class="absolute bottom-6 left-4 right-4">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="flex items-center w-full px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200">
+                    <button type="submit" class="flex items-center px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200">
                         <i class="fas fa-sign-out-alt mr-3"></i>
                         Logout
                     </button>
@@ -417,12 +417,20 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         @if($customer->followup_date)
-                                            <div class="text-sm {{ $customer->is_overdue ? 'text-red-600 font-semibold' : ($customer->is_followup_today ? 'text-green-600 font-semibold' : 'text-gray-900') }}">
-                                                {{ $customer->followup_date->format('d M Y') }}
-                                                @if($customer->is_overdue)
+                                            @if($customer->is_overdue)
+                                                <div class="text-sm text-red-600 font-semibold">
+                                                    {{ $customer->followup_date->format('d M Y') }}
                                                     <i class="fas fa-exclamation-triangle text-red-500 ml-1"></i>
-                                                @endif
-                                            </div>
+                                                </div>
+                                            @elseif($customer->is_followup_today)
+                                                <div class="text-sm text-green-600 font-semibold">
+                                                    {{ $customer->followup_date->format('d M Y') }}
+                                                </div>
+                                            @else
+                                                <div class="text-sm text-gray-900">
+                                                    {{ $customer->followup_date->format('d M Y') }}
+                                                </div>
+                                            @endif
                                         @endif
                                         @if($customer->fu_checkbox)
                                             <span class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
@@ -431,19 +439,19 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4">
-                                <div class="flex space-x-2">
-                                    @if($customer->phone)
-                                        <a href="{{ $customer->whatsapp_link }}" target="_blank"
-                                        class="bg-teal-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-teal-600 transition-all duration-200 flex items-center">
-                                            <i class="fab fa-whatsapp mr-1"></i>WA
-                                        </a>
-                                    @endif
-                                    <button onclick="openEditModal({{ $customer->id }})"
-                                            class="btn-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center">
-                                        <i class="fas fa-edit mr-1"></i>Edit
-                                    </button>
-                                </div>
-                            </td>
+                                        <div class="flex space-x-2">
+                                            @if($customer->phone)
+                                                <a href="{{ $customer->whatsapp_link }}" target="_blank"
+                                                   class="bg-teal-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-teal-600 transition-all duration-200 flex items-center">
+                                                    <i class="fab fa-whatsapp mr-1"></i>WA
+                                                </a>
+                                            @endif
+                                            <button onclick="openEditModal({{ $customer->id }})"
+                                                    class="btn-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center">
+                                                <i class="fas fa-edit mr-1"></i>Edit
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
                                 @empty
                                 <tr>
@@ -461,29 +469,26 @@
                     @if ($customers->hasPages())
                         <div class="border-t border-gray-100">
                             <div class="pagination-container">
-                                {{-- Previous Page Link --}}
                                 @if ($customers->onFirstPage())
                                     <button class="pagination-btn disabled">
                                         <i class="fas fa-chevron-left"></i>
                                     </button>
                                 @else
-                                    <a href="{{ $customers->previousPageUrl() }}" class="pagination-btn">
+                                    <a href="{{ $customers->previousPageUrl() . (request()->getQueryString() ? '&' . request()->getQueryString() : '') }}" class="pagination-btn">
                                         <i class="fas fa-chevron-left"></i>
                                     </a>
                                 @endif
 
-                                {{-- Pagination Elements --}}
                                 @foreach ($customers->getUrlRange(1, $customers->lastPage()) as $page => $url)
                                     @if ($page == $customers->currentPage())
                                         <button class="pagination-btn active">{{ $page }}</button>
                                     @else
-                                        <a href="{{ $url }}" class="pagination-btn">{{ $page }}</a>
+                                        <a href="{{ $url . (request()->getQueryString() ? '&' . request()->getQueryString() : '') }}" class="pagination-btn">{{ $page }}</a>
                                     @endif
                                 @endforeach
 
-                                {{-- Next Page Link --}}
                                 @if ($customers->hasMorePages())
-                                    <a href="{{ $customers->nextPageUrl() }}" class="pagination-btn">
+                                    <a href="{{ $customers->nextPageUrl() . (request()->getQueryString() ? '&' . request()->getQueryString() : '') }}" class="pagination-btn">
                                         <i class="fas fa-chevron-right"></i>
                                     </a>
                                 @else
@@ -562,7 +567,6 @@
             document.getElementById('editModal').classList.add('hidden');
         }
         
-        // Close modal when clicking outside
         document.getElementById('editModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeEditModal();
