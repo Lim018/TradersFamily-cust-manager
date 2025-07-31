@@ -30,8 +30,15 @@ class WebhookController extends Controller
                 'alasan_depo_decline' => 'nullable|string',
                 'fu_jumlah' => 'nullable|integer',
                 'fu_ke_1' => 'nullable|string',
-                'fu_checkbox' => 'nullable|boolean',
-                'next_fu' => 'nullable|string',
+                'fu_checkbox_1' => 'nullable|boolean',
+                'fu_ke_2' => 'nullable|string',
+                'fu_checkbox_2' => 'nullable|boolean',
+                'fu_ke_3' => 'nullable|string',
+                'fu_checkbox_3' => 'nullable|boolean',
+                'fu_ke_4' => 'nullable|string',
+                'fu_checkbox_4' => 'nullable|boolean',
+                'fu_ke_5' => 'nullable|string',
+                'fu_checkbox_5' => 'nullable|boolean',
                 'sheet_month' => 'nullable|string',
                 'notes' => 'nullable|string'
             ]);
