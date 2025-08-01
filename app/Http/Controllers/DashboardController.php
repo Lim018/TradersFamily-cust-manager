@@ -50,17 +50,17 @@ class DashboardController extends Controller
         }
         
         // Filter berdasarkan status follow up
-        // if ($request->filled('followup_status')) {
-        //     if ($request->followup_status === 'pending') {
-        //         $query->whereNotNull('followup_date')
-        //               ->where('followup_date', '>=', Carbon::today());
-        //     } elseif ($request->followup_status === 'overdue') {
-        //         $query->whereNotNull('followup_date')
-        //               ->where('followup_date', '<', Carbon::today());
-        //     } elseif ($request->followup_status === 'completed') {
-        //         $query->where('fu_checkbox', true);
-        //     }
-        // }
+        if ($request->filled('followup_status')) {
+            if ($request->followup_status === 'pending') {
+                $query->whereNotNull('followup_date')
+                      ->where('followup_date', '>=', Carbon::today());
+            } elseif ($request->followup_status === 'overdue') {
+                $query->whereNotNull('followup_date')
+                      ->where('followup_date', '<', Carbon::today());
+            } elseif ($request->followup_status === 'completed') {
+                $query->where('fu_checkbox', true);
+            }
+        }
         
         $customers = $query->orderBy('created_at', 'desc')->paginate(15);
         
