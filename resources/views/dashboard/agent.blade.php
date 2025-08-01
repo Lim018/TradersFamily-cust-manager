@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -416,27 +417,92 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4">
+                                        @php
+                                            $hasFu = false;
+                                            if ($customer->followup_date) {
+                                                $hasFu = true;
+                                            }
+                                            foreach(['fu_ke_1', 'fu_ke_2', 'fu_ke_3', 'fu_ke_4', 'fu_ke_5'] as $fu_field) {
+                                                if ($customer->$fu_field) {
+                                                    $hasFu = true;
+                                                }
+                                            }
+                                        @endphp
+                                        @if(!$hasFu)
+                                            <div class="text-sm text-gray-500">No Follow-up Data</div>
+                                        @endif
                                         @if($customer->followup_date)
-                                            @if($customer->is_overdue)
-                                                <div class="text-sm text-red-600 font-semibold">
-                                                    {{ $customer->followup_date->format('d M Y') }}
-                                                    <i class="fas fa-exclamation-triangle text-red-500 ml-1"></i>
-                                                </div>
-                                            @elseif($customer->is_followup_today)
-                                                <div class="text-sm text-green-600 font-semibold">
-                                                    {{ $customer->followup_date->format('d M Y') }}
+                                            @php
+                                                try {
+                                                    $date = \Carbon\Carbon::parse($customer->followup_date);
+                                                    $is_overdue = $date->isPast() && !$date->isToday() && !$customer->fu_checkbox;
+                                                    $is_today = $date->isToday();
+                                                    $is_pending = !$is_overdue && !$is_today && !$customer->fu_checkbox;
+                                                } catch (\Exception $e) {
+                                                    $date = null;
+                                                    $is_overdue = false;
+                                                    $is_today = false;
+                                                    $is_pending = false;
+                                                }
+                                            @endphp
+                                            @if($date)
+                                                <div class="text-sm {{ $is_overdue ? 'text-red-600 font-semibold' : ($is_today ? 'text-green-600 font-semibold' : ($is_pending ? 'text-blue-600 font-semibold' : 'text-gray-900')) }}">
+                                                    Follow-up: {{ $date->format('d M Y') }}
+                                                    @if($is_overdue)
+                                                        <i class="fas fa-exclamation-triangle text-red-500 ml-1"></i>
+                                                    @elseif($is_today)
+                                                        <i class="fas fa-calendar-day text-green-500 ml-1"></i>
+                                                    @elseif($is_pending)
+                                                        <i class="fas fa-clock text-blue-500 ml-1"></i>
+                                                    @endif
                                                 </div>
                                             @else
-                                                <div class="text-sm text-gray-900">
-                                                    {{ $customer->followup_date->format('d M Y') }}
-                                                </div>
+                                                <div class="text-sm text-red-600">Invalid date for Follow-up</div>
+                                            @endif
+                                            @if($customer->fu_checkbox)
+                                                <span class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
+                                                    <i class="fas fa-check mr-1"></i>Completed
+                                                </span>
                                             @endif
                                         @endif
-                                        @if($customer->fu_checkbox)
-                                            <span class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
-                                                <i class="fas fa-check mr-1"></i>Completed
-                                            </span>
-                                        @endif
+                                        @foreach(['fu_ke_1', 'fu_ke_2', 'fu_ke_3', 'fu_ke_4', 'fu_ke_5'] as $index => $fu_field)
+                                            @if($customer->$fu_field)
+                                                @php
+                                                    try {
+                                                        $date = \Carbon\Carbon::parse($customer->$fu_field);
+                                                        $is_overdue = $date->isPast() && !$date->isToday() && !$customer->{'fu_checkbox_' . ($index + 1)};
+                                                        $is_today = $date->isToday();
+                                                        $is_pending = !$is_overdue && !$is_today && !$customer->{'fu_checkbox_' . ($index + 1)};
+                                                        $fu_number = $index + 1;
+                                                    } catch (\Exception $e) {
+                                                        $date = null;
+                                                        $is_overdue = false;
+                                                        $is_today = false;
+                                                        $is_pending = false;
+                                                        $fu_number = $index + 1;
+                                                    }
+                                                @endphp
+                                                @if($date)
+                                                    <div class="text-sm {{ $is_overdue ? 'text-red-600 font-semibold' : ($is_today ? 'text-green-600 font-semibold' : ($is_pending ? 'text-blue-600 font-semibold' : 'text-gray-900')) }}">
+                                                        FU ke-{{ $fu_number }}: {{ $date->format('d M Y') }}
+                                                        @if($is_overdue)
+                                                            <i class="fas fa-exclamation-triangle text-red-500 ml-1"></i>
+                                                        @elseif($is_today)
+                                                            <i class="fas fa-calendar-day text-green-500 ml-1"></i>
+                                                        @elseif($is_pending)
+                                                            <i class="fas fa-clock text-blue-500 ml-1"></i>
+                                                        @endif
+                                                    </div>
+                                                @else
+                                                    <div class="text-sm text-red-600">Invalid date for FU ke-{{ $fu_number }}</div>
+                                                @endif
+                                            @endif
+                                            @if($customer->{'fu_checkbox_' . ($index + 1)})
+                                                <span class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
+                                                    <i class="fas fa-check mr-1"></i>Completed FU ke-{{ $index + 1 }}
+                                                </span>
+                                            @endif
+                                        @endforeach
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex space-x-2">
@@ -534,6 +600,7 @@
                             <span class="text-sm font-medium text-gray-700">Follow-up Completed</span>
                         </label>
                     </div>
+                   
                     <div class="flex justify-end space-x-3">
                         <button type="button" onclick="closeEditModal()"
                                 class="btn-secondary px-6 py-2.5 rounded-lg">
@@ -551,13 +618,13 @@
     <script>
         const customers = @json($customers->items());
         
-        function openEditModal(customerId) {
+            function openEditModal(customerId) {
             const customer = customers.find(c => c.id === customerId);
             if (!customer) return;
             
             document.getElementById('editForm').action = `/dashboard/customer/${customerId}`;
             document.getElementById('editNotes').value = customer.notes || '';
-            document.getElementById('editFollowupDate').value = customer.followup_date || '';
+            document.getElementById('editFollowupDate').value = customer.followup_date ? new Date(customer.followup_date).toISOString().split('T')[0] : '';
             document.getElementById('editFuCheckbox').checked = customer.fu_checkbox || false;
             
             document.getElementById('editModal').classList.remove('hidden');
@@ -567,7 +634,7 @@
             document.getElementById('editModal').classList.add('hidden');
         }
         
--        document.getElementById('editModal').addEventListener('click', function(e) {
+        document.getElementById('editModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeEditModal();
             }
