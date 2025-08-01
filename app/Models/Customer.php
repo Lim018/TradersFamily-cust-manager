@@ -26,17 +26,26 @@ class Customer extends Model
         'alasan_depo_decline',
         'fu_jumlah',
         'fu_ke_1',
-        'fu_checkbox',
-        'next_fu',
-        'fu_dates',
+        'fu_checkbox_1',
+        'fu_ke_2',
+        'fu_checkbox_2',
+        'fu_ke_3',
+        'fu_checkbox_3',
+        'fu_ke_4',
+        'fu_checkbox_4',
+        'fu_ke_5',
+        'fu_checkbox_5',
         'sheet_month',
         'notes',
         'followup_date'
     ];
 
     protected $casts = [
-        'fu_dates' => 'array',
-        'fu_checkbox' => 'boolean',
+        'fu_checkbox_1' => 'boolean',
+        'fu_checkbox_2' => 'boolean',
+        'fu_checkbox_3' => 'boolean',
+        'fu_checkbox_4' => 'boolean',
+        'fu_checkbox_5' => 'boolean',
         'followup_date' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'

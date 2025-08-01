@@ -28,9 +28,15 @@ return new class extends Migration
             $table->string('alasan_depo_decline')->nullable();
             $table->integer('fu_jumlah')->default(0);
             $table->string('fu_ke_1')->nullable();
-            $table->boolean('fu_checkbox')->default(false);
-            $table->string('next_fu')->nullable();
-            $table->json('fu_dates')->nullable(); // Store FU ke 2, 3, dst
+            $table->boolean('fu_checkbox_1')->default(false);
+            $table->string('fu_ke_2')->nullable();
+            $table->boolean('fu_checkbox_2')->default(false);
+            $table->string('fu_ke_3')->nullable();
+            $table->boolean('fu_checkbox_3')->default(false);
+            $table->string('fu_ke_4')->nullable();
+            $table->boolean('fu_checkbox_4')->default(false);
+            $table->string('fu_ke_5')->nullable();
+            $table->boolean('fu_checkbox_5')->default(false);
             $table->string('sheet_month')->nullable();
             $table->text('notes')->nullable(); // Manual notes by agent
             $table->date('followup_date')->nullable(); // Manual follow-up date
