@@ -147,6 +147,11 @@ class DashboardController extends Controller
         $user = Auth::user();
         
         $query = Customer::active()->whereDate('followup_date', Carbon::today());
+
+        
+        $stats = [
+            'archived_count' => Customer::where('user_id', $user->id)->archived()->count()
+        ];
         
         if ($user->role === 'agent') {
             $query->where('user_id', $user->id);
@@ -154,7 +159,7 @@ class DashboardController extends Controller
         
         $customers = $query->orderBy('followup_date', 'asc')->get();
         
-        return view('dashboard.followup-today', compact('customers'));
+        return view('dashboard.followup-today', compact('customers', 'stats'));
     }
 
     public function archived(Request $request)
