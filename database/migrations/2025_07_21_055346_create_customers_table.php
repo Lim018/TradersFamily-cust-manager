@@ -40,6 +40,10 @@ return new class extends Migration
             $table->string('sheet_month')->nullable();
             $table->text('notes')->nullable(); // Manual notes by agent
             $table->date('followup_date')->nullable(); // Manual follow-up date
+            $table->boolean('is_archived')->default(false);
+            $table->timestamp('archived_at')->nullable();
+            $table->unsignedBigInteger('archived_by')->nullable();
+            $table->foreign('archived_by')->references('id')->on('users')->onDelete('set null');
             $table->timestamps();
             
             // Unique constraint untuk nama + user_id (agent)

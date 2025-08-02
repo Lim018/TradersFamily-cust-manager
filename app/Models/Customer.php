@@ -37,7 +37,10 @@ class Customer extends Model
         'fu_checkbox_5',
         'sheet_month',
         'notes',
-        'followup_date'
+        'followup_date',
+        'is_archived',
+        'archived_at',
+        'archived_by'
     ];
 
     protected $casts = [
@@ -47,6 +50,8 @@ class Customer extends Model
         'fu_checkbox_4' => 'boolean',
         'fu_checkbox_5' => 'boolean',
         'followup_date' => 'date',
+        'is_archived' => 'boolean',
+        'archived_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
@@ -59,6 +64,11 @@ class Customer extends Model
     public function activityLogs()
     {
         return $this->hasMany(ActivityLog::class);
+    }
+
+    public function archivedBy()
+    {
+        return $this->belongsTo(User::class, 'archived_by');
     }
 
     // Accessor untuk WhatsApp link
@@ -124,6 +134,26 @@ class Customer extends Model
         return $this->followup_date && $this->followup_date->isToday();
     }
 
+    // Archive customer
+    public function archive($userId)
+    {
+        $this->update([
+            'is_archived' => true,
+            'archived_at' => now(),
+            'archived_by' => $userId
+        ]);
+    }
+
+    // Restore customer from archive
+    public function restore()
+    {
+        $this->update([
+            'is_archived' => false,
+            'archived_at' => null,
+            'archived_by' => null
+        ]);
+    }
+
     // Scope untuk filter
     public function scopeByStatus($query, $status)
     {
@@ -154,5 +184,15 @@ class Customer extends Model
     public function scopeByAgent($query, $userId)
     {
         return $query->where('user_id', $userId);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_archived', false);
+    }
+
+    public function scopeArchived($query)
+    {
+        return $query->where('is_archived', true);
     }
 }
