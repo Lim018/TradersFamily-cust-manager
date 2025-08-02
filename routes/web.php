@@ -23,12 +23,17 @@ Route::middleware('auth')->group(function () {
     // Dashboard routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/followup-today', [DashboardController::class, 'followupToday'])->name('followup.today');
+    Route::get('/dashboard/archived', [DashboardController::class, 'archived'])->name('dashboard.archived');
     
     // Customer management routes
     Route::patch('/dashboard/customer/{customer}', [DashboardController::class, 'updateCustomer'])
         ->name('customer.update');
     Route::patch('/customer/{customer}/mark-completed', [DashboardController::class, 'markCompleted'])
         ->name('customer.mark-completed');
+    Route::patch('/customer/{customer}/archive', [DashboardController::class, 'archiveCustomer'])
+        ->name('customer.archive');
+    Route::patch('/customer/{customer}/restore', [DashboardController::class, 'restoreCustomer'])
+        ->name('customer.restore');
     
     // Admin only routes
     Route::middleware('admin')->group(function () {
