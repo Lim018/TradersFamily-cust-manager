@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -58,6 +57,20 @@
             background: #e5e7eb;
             transform: translateY(-1px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            border: none;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
         }
         
         .form-input {
@@ -216,6 +229,13 @@
                         <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">{{ $stats['followup_today'] }}</span>
                     @endif
                 </a>
+                <a href="{{ route('dashboard.archived') }}" class="sidebar-link flex items-center px-4 py-3 text-gray-700 font-medium">
+                    <i class="fas fa-archive mr-3"></i>
+                    Arsip Customer
+                    @if($stats['archived_count'] > 0)
+                        <span class="ml-auto bg-gray-500 text-white text-xs px-2 py-1 rounded-full">{{ $stats['archived_count'] }}</span>
+                    @endif
+                </a>
             </nav>
             
             <!-- Logout -->
@@ -240,7 +260,7 @@
                 </div>
 
                 <!-- Statistics Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4 mb-6">
                     <div class="stat-card p-4 rounded-lg">
                         <div class="flex items-center">
                             <div class="p-2 bg-blue-100 rounded-lg mr-3">
@@ -309,6 +329,18 @@
                             <div>
                                 <p class="text-2xl font-bold text-gray-900">{{ $stats['overdue_followup'] }}</p>
                                 <p class="text-sm text-gray-600">Overdue</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card p-4 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-purple-100 rounded-lg mr-3">
+                                <i class="fas fa-archive text-purple-600 text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-gray-900">{{ $stats['archived_count'] }}</p>
+                                <p class="text-sm text-gray-600">Arsip</p>
                             </div>
                         </div>
                     </div>
@@ -464,6 +496,11 @@
                                                     <i class="fas fa-check mr-1"></i>Completed
                                                 </span>
                                             @endif
+                                            @if($customer->fu_checkbox || $customer->activityLogs()->where('description', 'Marked follow-up as completed')->exists())
+                                            <span class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
+                                                <i class="fas fa-check mr-1"></i>Completed
+                                            </span>
+                                        @endif
                                         @endif
                                         @foreach(['fu_ke_1', 'fu_ke_2', 'fu_ke_3', 'fu_ke_4', 'fu_ke_5'] as $index => $fu_field)
                                             @if($customer->$fu_field)
@@ -516,6 +553,14 @@
                                                     class="btn-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center">
                                                 <i class="fas fa-edit mr-1"></i>Edit
                                             </button>
+                                            <form method="POST" action="{{ route('customer.archive', $customer->id) }}" class="inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" onclick="return confirm('Yakin ingin mengarsipkan customer ini?')"
+                                                        class="btn-danger px-3 py-1.5 rounded-lg text-xs font-medium flex items-center">
+                                                    <i class="fas fa-archive mr-1"></i>Arsip
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>
