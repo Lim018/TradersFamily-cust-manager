@@ -204,6 +204,14 @@
                 opacity: 1;
             }
         }
+        
+        .followup-date-container {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
     </style>
 </head>
 <body>
@@ -451,7 +459,8 @@
                                     <td class="px-6 py-4">
                                         @php
                                             $hasFu = false;
-                                            if ($customer->followup_date) {
+                                            $followupDates = json_decode($customer->followup_date, true) ?? [];
+                                            if (!empty($followupDates)) {
                                                 $hasFu = true;
                                             }
                                             foreach(['fu_ke_1', 'fu_ke_2', 'fu_ke_3', 'fu_ke_4', 'fu_ke_5'] as $fu_field) {
@@ -463,13 +472,13 @@
                                         @if(!$hasFu)
                                             <div class="text-sm text-gray-500">No Follow-up Data</div>
                                         @endif
-                                        @if($customer->followup_date)
+                                        @foreach($followupDates as $index => $dateObj)
                                             @php
                                                 try {
-                                                    $date = \Carbon\Carbon::parse($customer->followup_date);
-                                                    $is_overdue = $date->isPast() && !$date->isToday() && !$customer->fu_checkbox;
+                                                    $date = \Carbon\Carbon::parse($dateObj['date']);
+                                                    $is_overdue = $date->isPast() && !$date->isToday() && !($dateObj['completed'] ?? false);
                                                     $is_today = $date->isToday();
-                                                    $is_pending = !$is_overdue && !$is_today && !$customer->fu_checkbox;
+                                                    $is_pending = !$is_overdue && !$is_today && !($dateObj['completed'] ?? false);
                                                 } catch (\Exception $e) {
                                                     $date = null;
                                                     $is_overdue = false;
@@ -479,7 +488,7 @@
                                             @endphp
                                             @if($date)
                                                 <div class="text-sm {{ $is_overdue ? 'text-red-600 font-semibold' : ($is_today ? 'text-green-600 font-semibold' : ($is_pending ? 'text-blue-600 font-semibold' : 'text-gray-900')) }}">
-                                                    Follow-up: {{ $date->format('d M Y') }}
+                                                    FU Tambahan {{ $index + 1 }}: {{ $date->format('d M Y') }}
                                                     @if($is_overdue)
                                                         <i class="fas fa-exclamation-triangle text-red-500 ml-1"></i>
                                                     @elseif($is_today)
@@ -488,20 +497,15 @@
                                                         <i class="fas fa-clock text-blue-500 ml-1"></i>
                                                     @endif
                                                 </div>
+                                                @if($dateObj['completed'] ?? false)
+                                                    <span class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
+                                                        <i class="fas fa-check mr-1"></i>Completed FU Tambahan {{ $index + 1 }}
+                                                    </span>
+                                                @endif
                                             @else
-                                                <div class="text-sm text-red-600">Invalid date for Follow-up</div>
+                                                <div class="text-sm text-red-600">Invalid date for FU Tambahan {{ $index + 1 }}</div>
                                             @endif
-                                            @if($customer->fu_checkbox)
-                                                <span class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
-                                                    <i class="fas fa-check mr-1"></i>Completed
-                                                </span>
-                                            @endif
-                                            @if($customer->fu_checkbox || $customer->activityLogs()->where('description', 'Marked follow-up as completed')->exists())
-                                            <span class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
-                                                <i class="fas fa-check mr-1"></i>Completed
-                                            </span>
-                                        @endif
-                                        @endif
+                                        @endforeach
                                         @foreach(['fu_ke_1', 'fu_ke_2', 'fu_ke_3', 'fu_ke_4', 'fu_ke_5'] as $index => $fu_field)
                                             @if($customer->$fu_field)
                                                 @php
@@ -617,91 +621,128 @@
 
     <!-- Edit Modal -->
     <div id="editModal" class="fixed inset-0 modal-backdrop hidden overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-6 border-0 w-full max-w-md shadow-2xl rounded-xl bg-white modal-content">
-            <div class="mt-3">
-                <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                    <i class="fas fa-edit mr-2 text-gray-600"></i>
-                    Edit Customer
-                </h3>
-                <form id="editForm" method="POST">
-                    @csrf
-                    @method('PATCH')
-                    
-                    <div class="mb-5">
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
-                        <textarea name="notes" id="editNotes" rows="4"
-                                  class="form-input w-full px-4 py-3 rounded-lg"
-                                  placeholder="Tambahkan catatan..."></textarea>
+    <div class="relative top-20 mx-auto p-6 border-0 w-full max-w-md shadow-2xl rounded-xl bg-white modal-content">
+        <div class="mt-3">
+            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                <i class="fas fa-edit mr-2 text-gray-600"></i>
+                Edit Customer
+            </h3>
+            <form id="editForm" method="POST">
+                @csrf
+                @method('PATCH')
+                
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
+                    <textarea name="notes" id="editNotes" rows="4"
+                              class="form-input w-full px-4 py-3 rounded-lg"
+                              placeholder="Tambahkan catatan..."></textarea>
+                </div>
+                
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Follow-up Dates</label>
+                    <div id="followup-dates-container">
+                        <!-- Dynamic follow-up date inputs will be added here -->
                     </div>
-                    <div class="mb-5">
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Follow-up Date</label>
-                        <input type="date" name="followup_date" id="editFollowupDate"
-                               class="form-input w-full px-4 py-3 rounded-lg">
-                    </div>
-                    <div class="mb-6">
-                        <label class="flex items-center">
-                            <input type="checkbox" name="fu_checkbox" id="editFuCheckbox" 
-                                   class="mr-3 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
-                            <span class="text-sm font-medium text-gray-700">Follow-up Completed</span>
-                        </label>
-                    </div>
-                   
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" onclick="closeEditModal()"
-                                class="btn-secondary px-6 py-2.5 rounded-lg">
-                            Cancel
-                        </button>
-                        <button type="submit" class="btn-primary text-white px-6 py-2.5 rounded-lg">
-                            Update Customer
-                        </button>
-                    </div>
-                </form>
-            </div>
+                    <button type="button" onclick="addFollowupDateInput()"
+                            class="btn-primary text-white px-4 py-2 rounded-lg mt-2 flex items-center">
+                        <i class="fas fa-plus mr-2"></i>Tambah Tanggal
+                    </button>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeEditModal()"
+                            class="btn-secondary px-6 py-2.5 rounded-lg">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-primary text-white px-6 py-2.5 rounded-lg">
+                        Update Customer
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
-    <script>
-        const customers = @json($customers->items());
+<script>
+    const customers = @json($customers->items());
+    
+    function openEditModal(customerId) {
+        const customer = customers.find(c => c.id === customerId);
+        if (!customer) return;
         
-            function openEditModal(customerId) {
-            const customer = customers.find(c => c.id === customerId);
-            if (!customer) return;
-            
-            document.getElementById('editForm').action = `/dashboard/customer/${customerId}`;
-            document.getElementById('editNotes').value = customer.notes || '';
-            document.getElementById('editFollowupDate').value = customer.followup_date ? new Date(customer.followup_date).toISOString().split('T')[0] : '';
-            document.getElementById('editFuCheckbox').checked = customer.fu_checkbox || false;
-            
-            document.getElementById('editModal').classList.remove('hidden');
-        }
+        document.getElementById('editForm').action = `/dashboard/customer/${customerId}`;
+        document.getElementById('editNotes').value = customer.notes || '';
         
-        function closeEditModal() {
-            document.getElementById('editModal').classList.add('hidden');
-        }
+        // Clear previous JSON followup inputs
+        const container = document.getElementById('followup-dates-container');
+        container.innerHTML = '';
         
-        document.getElementById('editModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeEditModal();
-            }
+        // Parse followup_date JSON
+        const followupDates = customer.followup_date ? JSON.parse(customer.followup_date) : [];
+        
+        // Add inputs for JSON follow-up dates
+        followupDates.forEach((dateObj, index) => {
+            addFollowupDateInput(dateObj.date, dateObj.completed || false, index);
         });
-    </script>
+        
+        // Add one empty input if no JSON dates exist
+        if (followupDates.length === 0) {
+            addFollowupDateInput();
+        }
+        
+        document.getElementById('editModal').classList.remove('hidden');
+    }
+    
+    function addFollowupDateInput(date = '', completed = false, index = null) {
+        const container = document.getElementById('followup-dates-container');
+        const inputIndex = index !== null ? index : container.children.length;
+        
+        const followupDiv = document.createElement('div');
+        followupDiv.className = 'followup-date-container flex items-center space-x-2 mb-2';
+        followupDiv.innerHTML = `
+            <input type="date" name="followup_date[${inputIndex}][date]" value="${date}" 
+                   class="form-input flex-1 px-4 py-2 rounded-lg">
+            <label class="flex items-center">
+                <input type="checkbox" name="followup_date[${inputIndex}][completed]" 
+                       ${completed ? 'checked' : ''} 
+                       class="mr-2 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                <span class="text-sm text-gray-700">Completed</span>
+            </label>
+            <button type="button" onclick="this.parentElement.remove()" 
+                    class="text-red-500 hover:text-red-700">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+        container.appendChild(followupDiv);
+    }
+    
+    function closeEditModal() {
+        document.getElementById('editModal').classList.add('hidden');
+    }
+    
+    document.getElementById('editModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeEditModal();
+        }
+    });
+</script>
 
-    @if(session('success'))
-        <div class="fixed top-6 right-6 bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-xl shadow-2xl z-50 success-toast">
-            <div class="flex items-center">
-                <i class="fas fa-check-circle mr-2"></i>
-                {{ session('success') }}
-            </div>
+@if(session('success'))
+    <div class="fixed top-6 right-6 bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-xl shadow-2xl z-50 success-toast">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            {{ session('success') }}
         </div>
-        <script>
-            setTimeout(() => {
-                const toast = document.querySelector('.success-toast');
-                if (toast) {
-                    toast.style.animation = 'slideInRight 0.4s ease-out reverse';
-                    setTimeout(() => toast.remove(), 400);
-                }
-            }, 3000);
-        </script>
-    @endif
+    </div>
+    <script>
+        setTimeout(() => {
+            const toast = document.querySelector('.success-toast');
+            if (toast) {
+                toast.style.animation = 'slideInRight 0.4s ease-out reverse';
+                setTimeout(() => toast.remove(), 400);
+            }
+        }, 3000);
+    </script>
+@endif
 </body>
 </html>
