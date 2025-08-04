@@ -49,7 +49,7 @@ class Customer extends Model
         'fu_checkbox_3' => 'boolean',
         'fu_checkbox_4' => 'boolean',
         'fu_checkbox_5' => 'boolean',
-        'followup_date' => 'date',
+        'followup_date' => 'array',
         'is_archived' => 'boolean',
         'archived_at' => 'datetime',
         'created_at' => 'datetime',

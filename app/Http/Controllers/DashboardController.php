@@ -52,8 +52,7 @@ class DashboardController extends Controller
         // Filter berdasarkan status follow up
         if ($request->filled('followup_status')) {
             if ($request->followup_status === 'pending') {
-                $query->whereNotNull('followup_date')
-                      ->where('followup_date', '>=', Carbon::today());
+            $query->whereJsonContains('followup_date', Carbon::today()->toDateString());
             } elseif ($request->followup_status === 'overdue') {
                 $query->whereNotNull('followup_date')
                       ->where('followup_date', '<', Carbon::today());
@@ -99,7 +98,7 @@ class DashboardController extends Controller
             'normal_status' => Customer::active()->whereIn('status_fu', ['normal', 'normal(prospect)'])->count(),
             'warm_status' => Customer::active()->whereIn('status_fu', ['warm', 'warm(potential)'])->count(),
             'hot_status' => Customer::active()->whereIn('status_fu', ['hot', 'hot(closeable)'])->count(),
-            'followup_today' => Customer::active()->whereDate('followup_date', Carbon::today())->count(),
+           'followup_today' => Customer::whereJsonContains('followup_date', Carbon::today()->toDateString())->count(),
             'closed_deals' => Customer::active()->whereNotNull('tanggal_closing')->count(),
             'archived_count' => Customer::archived()->count()
         ];
@@ -195,17 +194,39 @@ class DashboardController extends Controller
         
         $request->validate([
             'notes' => 'nullable|string',
-            'followup_date' => 'nullable|date',
+            'followup_date' => 'nullable|array',
+            'followup_date.*.date' => 'nullable|date',
             'fu_checkbox' => 'boolean'
         ]);
         
         $oldData = $customer->toArray();
         
-        $customer->update([
+        $updateData = [
             'notes' => $request->notes,
-            'followup_date' => $request->followup_date,
+            'followup_date' => json_encode($request->input('followup_date', [])),
             'fu_checkbox' => $request->has('fu_checkbox')
+        ];
+
+        Log::info('Update Customer Data:', [
+            'customer_id' => $customer->id,
+            'update_data' => $updateData
         ]);
+        
+        // Update customer
+        try {
+            $customer->update($updateData);
+            // Log data setelah update
+            Log::info('Customer Updated:', [
+                'customer_id' => $customer->id,
+                'new_data' => $customer->fresh()->toArray()
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to Update Customer:', [
+                'customer_id' => $customer->id,
+                'error' => $e->getMessage()
+            ]);
+            return back()->with('error', 'Failed to update customer: ' . $e->getMessage());
+        }
         
         // Log aktivitas
         ActivityLog::create([
