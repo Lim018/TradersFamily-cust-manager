@@ -39,7 +39,7 @@ return new class extends Migration
             $table->boolean('fu_checkbox_5')->default(false);
             $table->string('sheet_month')->nullable();
             $table->text('notes')->nullable(); // Manual notes by agent
-            $table->date('followup_date')->nullable(); // Manual follow-up date
+            $table->json('followup_date')->nullable(); // Manual follow-up date
             $table->boolean('is_archived')->default(false);
             $table->timestamp('archived_at')->nullable();
             $table->unsignedBigInteger('archived_by')->nullable();

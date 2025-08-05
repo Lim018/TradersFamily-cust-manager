@@ -21,7 +21,8 @@ class CustomerController extends Controller
 
         $validated = $request->validate([
             'notes' => 'nullable|string',
-            'followup_date' => 'nullable|date',
+            'followup_date' => 'nullable|array',
+            'followup_date.*.date' => 'nullable|date',
             'status_fu' => 'nullable|in:normal,warm,hot'
         ]);
 

@@ -331,13 +331,15 @@
                                                     <i class="fas fa-clock mr-1"></i>Today
                                                 </span>
                                             @endif
-                                            @if($customer->fu_checkbox)
-                                                <span class="inline-flex items-center px-2 lg:px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
-                                                    <i class="fas fa-check mr-1"></i>
-                                                    <span class="hidden sm:inline">Completed</span>
-                                                    <span class="sm:hidden">Done</span>
-                                                </span>
-                                            @endif
+                                            @php
+                                        $isCompleted = $customer->activityLogs->firstWhere('description', 'Marked follow-up as completed');
+                                    @endphp
+
+                                    @if($isCompleted)
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <i class="fas fa-check mr-1"></i> Completed </span>
+                                    @endif
+                                    
                                         </div>
                                     </div>
                                     <div class="text-left sm:text-right text-sm text-gray-500">
@@ -415,12 +417,12 @@
                                         <span class="sm:hidden">Update</span>
                                     </button>
                                     
-                                    @if(!$customer->fu_checkbox)
-                                        <form method="POST" action="{{ route('customer.mark-completed', $customer->id) }}" class="flex-1 sm:flex-initial">
+                                    @if(!$isCompleted)
+                                        <form method="POST" action="{{ route('customer.mark-completed', $customer->id) }}">
                                             @csrf
                                             @method('PATCH')
                                             <button type="submit"
-                                                    class="btn-neutral text-white w-full px-4 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center">
+                                                    class="btn-neutral text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center">
                                                 <i class="fas fa-check mr-2"></i>
                                                 <span class="hidden sm:inline">Mark Completed</span>
                                                 <span class="sm:hidden">Complete</span>
