@@ -343,9 +343,9 @@
                                         </div>
                                     </div>
                                     <div class="text-left sm:text-right text-sm text-gray-500">
-                                        <p class="font-medium">{{ $customer->followup_date->format('H:i') }}</p>
-                                        <p class="text-xs">{{ $customer->followup_date->diffForHumans() }}</p>
-                                    </div>
+                                    <p class="font-medium">{{ $customer->today_followup_date ? $customer->today_followup_date->format('d M Y') : 'Today' }}</p>
+                                    <p class="text-xs">Follow-up scheduled</p>
+                                </div>
                                 </div>
 
                                 <!-- Customer Details -->

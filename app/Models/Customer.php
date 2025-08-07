@@ -123,15 +123,48 @@ class Customer extends Model
     }
 
     // Check if follow up is overdue
-    public function getIsOverdueAttribute()
+    // public function getIsOverdueAttribute()
+    // {
+    //     return $this->followup_date && $this->followup_date->isPast() && !$this->fu_checkbox;
+    // }
+
+        public function getIsOverdueAttribute()
     {
-        return $this->followup_date && $this->followup_date->isPast() && !$this->fu_checkbox;
+        if (!$this->followup_date) return false;
+        
+        $today = Carbon::today()->format('Y-m-d');
+        $dates = json_decode($this->followup_date, true);
+        
+        foreach ($dates as $dateItem) {
+            $followupDate = Carbon::parse($dateItem['date']);
+            if ($followupDate->lt(Carbon::today())) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     // Check if follow up is today
-    public function getIsFollowupTodayAttribute()
+    // public function getIsFollowupTodayAttribute()
+    // {
+    //     return $this->followup_date && $this->followup_date->isToday();
+    // }
+
+        public function getTodayFollowupDateAttribute()
     {
-        return $this->followup_date && $this->followup_date->isToday();
+        if (!$this->followup_date) return null;
+        
+        $today = Carbon::today()->format('Y-m-d');
+        $dates = json_decode($this->followup_date, true);
+        
+        foreach ($dates as $dateItem) {
+            if ($dateItem['date'] === $today) {
+                return Carbon::parse($dateItem['date']);
+            }
+        }
+        
+        return null;
     }
 
     // Archive customer
@@ -195,4 +228,5 @@ class Customer extends Model
     {
         return $query->where('is_archived', true);
     }
+    
 }
