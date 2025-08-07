@@ -15,6 +15,41 @@
             background: #f8fafc;
         }
         
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .sidebar-hidden {
+            transform: translateX(-100%);
+        }
+
+        .hamburger {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100%;
+                z-index: 1000;
+                width: 280px;
+            }
+
+            .sidebar-hidden {
+                transform: translateX(-100%);
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+            }
+        }
+        
         .sidebar-link {
             transition: all 0.2s ease;
             border-radius: 8px;
@@ -139,17 +174,80 @@
                 opacity: 1;
             }
         }
+
+        /* === Responsive Utilities === */
+        @media (max-width: 1024px) {
+            .sidebar-link {
+                font-size: 15px;
+                padding: 10px 12px;
+            }
+
+            .stat-card {
+                margin-bottom: 1rem;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+
+            .form-input {
+                width: 100%;
+                font-size: 14px;
+            }
+
+            .stat-card,
+            .table-row {
+                font-size: 14px;
+            }
+
+            .sidebar-link {
+                display: block;
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn-primary,
+            .btn-secondary {
+                font-size: 13px;
+                padding: 10px;
+            }
+
+            .table-row {
+                display: block;
+                padding: 10px;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .sidebar-link {
+                font-size: 13px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <div class="w-72 bg-white shadow-lg border-r border-gray-200">
-            <div class="p-6 border-b border-gray-100">
-                <h1 class="text-xl font-bold bg-gradient-to-r from-[#2D5A27] to-cyan-600 bg-clip-text text-transparent">
-                    Traders Family
-                </h1>
-                <p class="text-sm text-gray-600 mt-1">Admin Panel</p>
+        <div class="w-72 bg-white shadow-lg border-r border-gray-200 sidebar" id="sidebar">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                <div>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-[#2D5A27] to-cyan-600 bg-clip-text text-transparent">
+                        Traders Family
+                    </h1>
+                    <p class="text-sm text-gray-600 mt-1">Admin Panel</p>
+                </div>
+                <button class="hamburger md:hidden" onclick="toggleSidebar()">
+                    <i class="fas fa-times text-gray-600 text-lg"></i>
+                </button>
             </div>
             
             <nav class="mt-6 px-4">
@@ -176,12 +274,17 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 overflow-y-auto bg-gray-50">
+        <div class="flex-1 overflow-y-auto bg-gray-50 main-content" id="main-content">
             <div class="p-6">
                 <!-- Header -->
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900">Admin Dashboard</h2>
-                    <p class="text-gray-600 mt-1">Monitoring dan statistik seluruh agent</p>
+                <div class="mb-6 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Admin Dashboard</h2>
+                        <p class="text-gray-600 mt-1">Monitoring dan statistik seluruh agent</p>
+                    </div>
+                    <button class="hamburger md:hidden" onclick="toggleSidebar()">
+                        <i class="fas fa-bars text-gray-600 text-lg"></i>
+                    </button>
                 </div>
 
                 <!-- Overview Statistics -->
@@ -338,6 +441,11 @@
     </div>
 
     <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('sidebar-hidden');
+        }
+
         // Status Distribution Chart
         const statusCtx = document.getElementById('statusChart').getContext('2d');
         new Chart(statusCtx, {
