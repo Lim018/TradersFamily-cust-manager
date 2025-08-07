@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Customer;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -144,9 +145,11 @@ class DashboardController extends Controller
     public function followupToday()
     {
         $user = Auth::user();
+        $today = Carbon::today()->format('Y-m-d'); // 2025-08-07
         
-        $query = Customer::active()->whereDate('followup_date', Carbon::today());
-
+        // Gunakan pattern yang work
+        $query = Customer::active()
+            ->where('followup_date', 'LIKE', '%' . $today . '%');
         
         $stats = [
             'archived_count' => Customer::where('user_id', $user->id)->archived()->count()
@@ -156,7 +159,9 @@ class DashboardController extends Controller
             $query->where('user_id', $user->id);
         }
         
-        $customers = $query->orderBy('followup_date', 'asc')->get();
+        $customers = $query->orderBy('created_at', 'desc')->get();
+        
+        \Log::info('Final customers found: ' . $customers->count());
         
         return view('dashboard.followup-today', compact('customers', 'stats'));
     }

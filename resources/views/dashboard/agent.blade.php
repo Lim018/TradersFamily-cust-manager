@@ -459,9 +459,9 @@
                                     <td class="px-6 py-4">
                                         @php
                                             $hasFu = false;
-                                            $followupDates = json_decode($customer->followup_date, true) ?? [];
-                                            if (!empty($followupDates)) {
-                                                $hasFu = true;
+                                           $followupDates = json_decode($customer->followup_date, true) ?? [];
+                                        if (!empty($followupDates)) {
+                                            $hasFu = true;
                                             }
                                             foreach(['fu_ke_1', 'fu_ke_2', 'fu_ke_3', 'fu_ke_4', 'fu_ke_5'] as $fu_field) {
                                                 if ($customer->$fu_field) {
@@ -476,6 +476,11 @@
                                             @php
                                                 try {
                                                     $date = \Carbon\Carbon::parse($dateObj['date']);
+                                                    $dateString = $date->format('Y-m-d');
+                                                    $isCompletedFromLog = \App\Models\ActivityLog::where('customer_id', $customer->id)
+                                                    ->where('description', 'Marked follow-up as completed')
+                                                    ->whereDate('created_at', $dateString)
+                                                    ->exists();
                                                     $is_overdue = $date->isPast() && !$date->isToday() && !($dateObj['completed'] ?? false);
                                                     $is_today = $date->isToday();
                                                     $is_pending = !$is_overdue && !$is_today && !($dateObj['completed'] ?? false);
@@ -484,6 +489,7 @@
                                                     $is_overdue = false;
                                                     $is_today = false;
                                                     $is_pending = false;
+                                                    $isCompletedFromLog = false;
                                                 }
                                             @endphp
                                             @if($date)
@@ -497,7 +503,7 @@
                                                         <i class="fas fa-clock text-blue-500 ml-1"></i>
                                                     @endif
                                                 </div>
-                                                @if($dateObj['completed'] ?? false)
+                                                @if($isCompletedFromLog)
                                                     <span class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
                                                         <i class="fas fa-check mr-1"></i>Completed FU Tambahan {{ $index + 1 }}
                                                     </span>
