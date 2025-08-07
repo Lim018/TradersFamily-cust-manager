@@ -167,6 +167,9 @@
                 <a href="{{ route('followup.today') }}" class="sidebar-link flex items-center px-4 py-3 text-gray-700 font-medium">
                     <i class="fas fa-calendar-check mr-3"></i>
                     Follow-up Hari Ini
+                    @if($stats['followup_today'] > 0)
+                        <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">{{ $stats['followup_today'] }}</span>
+                    @endif
                 </a>
                 <a href="{{ route('dashboard.archived') }}" class="sidebar-link active flex items-center px-4 py-3 text-white font-medium">
                     <i class="fas fa-archive mr-3"></i>

@@ -240,9 +240,9 @@
                 <a href="{{ route('dashboard.archived') }}" class="sidebar-link flex items-center px-4 py-3 text-gray-700 font-medium">
                     <i class="fas fa-archive mr-3"></i>
                     Arsip Customer
-                    @if($stats['archived_count'] > 0)
+                    {{-- @if($stats['archived_count'] > 0)
                         <span class="ml-auto bg-gray-500 text-white text-xs px-2 py-1 rounded-full">{{ $stats['archived_count'] }}</span>
-                    @endif
+                    @endif --}}
                 </a>
             </nav>
             
@@ -708,12 +708,6 @@
         followupDiv.innerHTML = `
             <input type="date" name="followup_date[${inputIndex}][date]" value="${date}" 
                    class="form-input flex-1 px-4 py-2 rounded-lg">
-            <label class="flex items-center">
-                <input type="checkbox" name="followup_date[${inputIndex}][completed]" 
-                       ${completed ? 'checked' : ''} 
-                       class="mr-2 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
-                <span class="text-sm text-gray-700">Completed</span>
-            </label>
             <button type="button" onclick="this.parentElement.remove()" 
                     class="text-red-500 hover:text-red-700">
                 <i class="fas fa-trash"></i>
