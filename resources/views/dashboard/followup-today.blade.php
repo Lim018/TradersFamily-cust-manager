@@ -14,6 +14,41 @@
             background: #f8fafc;
         }
         
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .sidebar-hidden {
+            transform: translateX(-100%);
+        }
+
+        .hamburger {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100%;
+                z-index: 1000;
+                width: 280px;
+            }
+
+            .sidebar-hidden {
+                transform: translateX(-100%);
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+            }
+        }
+        
         .sidebar-link {
             transition: all 0.2s ease;
             border-radius: 8px;
@@ -32,7 +67,7 @@
         }
         
         .btn-neutral {
-            background: #6b7280; /* Neutral gray */
+            background: #6b7280;
             color: white;
             border: none;
             transition: all 0.2s ease;
@@ -40,7 +75,7 @@
         }
         
         .btn-neutral:hover {
-            background: #4b5563; /* Darker neutral gray */
+            background: #4b5563;
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(55, 65, 81, 0.2);
         }
@@ -172,60 +207,88 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
-        
-        /* Mobile Sidebar */
-        .mobile-sidebar {
-            transform: translateX(-100%);
-            transition: transform 0.3s ease-in-out;
+
+        /* === Responsive Utilities === */
+        @media (max-width: 1024px) {
+            .sidebar-link {
+                font-size: 15px;
+                padding: 10px 12px;
+            }
+
+            .summary-card {
+                margin-bottom: 1rem;
+            }
+
+            .btn-neutral,
+            .btn-success {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
         }
-        
-        .mobile-sidebar.open {
-            transform: translateX(0);
-        }
-        
-        .mobile-overlay {
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease-in-out;
-        }
-        
-        .mobile-overlay.open {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        /* Responsive adjustments */
+
         @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+
+            .form-input {
+                width: 100%;
+                font-size: 14px;
+            }
+
+            .modal-content {
+                width: 90%;
+                margin: auto;
+            }
+
+            .summary-card,
+            .customer-card {
+                font-size: 14px;
+            }
+
             .customer-card:hover {
                 transform: none;
             }
-            
+
             .btn-neutral:hover,
             .btn-success:hover {
                 transform: none;
+            }
+
+            .sidebar-link {
+                display: block;
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn-neutral,
+            .btn-success {
+                font-size: 13px;
+                padding: 10px;
+            }
+
+            .sidebar-link {
+                font-size: 13px;
             }
         }
     </style>
 </head>
 <body>
     <div class="flex h-screen">
-        <!-- Mobile Overlay -->
-        <div id="mobileOverlay" class="mobile-overlay fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"></div>
-        
         <!-- Sidebar -->
-        <div id="sidebar" class="mobile-sidebar fixed lg:relative lg:translate-x-0 w-72 bg-white shadow-lg border-r border-gray-200 z-50 lg:z-auto">
-            <div class="p-4 lg:p-6 border-b border-gray-100">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="text-lg lg:text-xl font-bold bg-gradient-to-r from-[#2D5A27] to-cyan-600 bg-clip-text text-transparent">
-                            Traders Family
-                        </h1>
-                        <p class="text-xs lg:text-sm text-gray-600 mt-1">Agent: {{ Auth::user()->name }}</p>
-                    </div>
-                    <button id="closeSidebar" class="lg:hidden p-2 text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times"></i>
-                    </button>
+        <div class="w-72 bg-white shadow-lg border-r border-gray-200 sidebar" id="sidebar">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                <div>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-[#2D5A27] to-cyan-600 bg-clip-text text-transparent">
+                        Traders Family
+                    </h1>
+                    <p class="text-sm text-gray-600 mt-1">Agent: {{ Auth::user()->name }}</p>
                 </div>
+                <button class="hamburger md:hidden" onclick="toggleSidebar()">
+                    <i class="fas fa-times text-gray-600 text-lg"></i>
+                </button>
             </div>
             
             <nav class="mt-6 px-4">
@@ -235,18 +298,14 @@
                 </a>
                 <a href="{{ route('followup.today') }}" class="sidebar-link active flex items-center px-4 py-3 text-white font-medium">
                     <i class="fas fa-calendar-check mr-3"></i>
-                    <span class="hidden sm:inline">Follow-up Hari Ini</span>
-                    <span class="sm:hidden">Follow-up</span>
+                    Follow-up Hari Ini
                     @if($customers->count() > 0)
-                        <span class="ml-auto bg-white/20 text-white text-xs px-2 py-1 rounded-full">{{ $customers->count() }}</span>
+                        <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">{{ $customers->count() }}</span>
                     @endif
                 </a>
                 <a href="{{ route('dashboard.archived') }}" class="sidebar-link flex items-center px-4 py-3 text-gray-700 font-medium">
                     <i class="fas fa-archive mr-3"></i>
                     Arsip Customer
-                    @if($stats['archived_count'] > 0)
-                        <span class="ml-auto bg-gray-500 text-white text-xs px-2 py-1 rounded-full">{{ $stats['archived_count'] }}</span>
-                    @endif
                 </a>
             </nav>
             
@@ -254,7 +313,7 @@
             <div class="absolute bottom-6 left-4 right-4">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="flex items-center w-full px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200">
+                    <button type="submit" class="flex items-center px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200">
                         <i class="fas fa-sign-out-alt mr-3"></i>
                         Logout
                     </button>
@@ -263,52 +322,44 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 overflow-y-auto bg-gray-50">
-            <!-- Mobile Header -->
-            <div class="lg:hidden bg-white border-b border-gray-200 p-4">
-                <div class="flex items-center justify-between">
-                    <button id="openSidebar" class="p-2 text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <h1 class="text-lg font-semibold text-gray-900">Follow-up Today</h1>
-                    <div class="w-10"></div> <!-- Spacer -->
-                </div>
-            </div>
-            
-            <div class="p-4 lg:p-6">
+        <div class="flex-1 overflow-y-auto bg-gray-50 main-content" id="main-content">
+            <div class="p-6">
                 <!-- Header -->
-                <div class="mb-4 lg:mb-6">
-                    <h2 class="text-xl lg:text-2xl font-bold text-gray-900">Follow-up Hari Ini</h2>
-                    <p class="text-sm lg:text-base text-gray-600 mt-1 flex items-center">
-                        <i class="fas fa-calendar mr-2 text-gray-400"></i>
-                        <span class="hidden sm:inline">{{ \Carbon\Carbon::today()->format('l, d F Y') }}</span>
-                        <span class="sm:hidden">{{ \Carbon\Carbon::today()->format('d M Y') }}</span>
-                    </p>
+                <div class="mb-6 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Follow-up Hari Ini</h2>
+                        <p class="text-gray-600 mt-1 flex items-center">
+                            <i class="fas fa-calendar mr-2 text-gray-400"></i>
+                            {{ \Carbon\Carbon::today()->format('l, d F Y') }}
+                        </p>
+                    </div>
+                    <button class="hamburger md:hidden" onclick="toggleSidebar()">
+                        <i class="fas fa-bars text-gray-600 text-lg"></i>
+                    </button>
                 </div>
 
                 <!-- Summary Card -->
-                <div class="summary-card p-4 lg:p-6 rounded-lg shadow-sm mb-4 lg:mb-6">
+                <div class="summary-card p-4 lg:p-6 rounded-lg shadow-sm mb-6">
                     <div class="flex items-center justify-between">
                         <div class="flex-1">
-                            <h3 class="text-base lg:text-lg font-semibold text-gray-900 mb-1">Total Follow-up Hari Ini</h3>
-                            <p class="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-[#2D5A27] to-cyan-600 bg-clip-text text-transparent">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-1">Total Follow-up Hari Ini</h3>
+                            <p class="text-3xl font-bold bg-gradient-to-r from-[#2D5A27] to-cyan-600 bg-clip-text text-transparent">
                                 {{ $customers->count() }}
                             </p>
-                            <p class="text-xs lg:text-sm text-gray-500 mt-1">
-                                <span class="block sm:inline">{{ $customers->where('is_overdue', true)->count() }} overdue</span>
-                                <span class="hidden sm:inline">, </span>
-                                <span class="block sm:inline">{{ $customers->where('is_overdue', false)->count() }} on schedule</span>
+                            <p class="text-sm text-gray-500 mt-1">
+                                {{ $customers->where('is_overdue', true)->count() }} overdue, 
+                                {{ $customers->where('is_overdue', false)->count() }} on schedule
                             </p>
                         </div>
-                        <div class="p-3 lg:p-4 bg-gradient-to-br from-[#2D5A27] to-cyan-500 rounded-xl ml-4">
-                            <i class="fas fa-calendar-check text-white text-xl lg:text-2xl"></i>
+                        <div class="p-4 bg-gradient-to-br from-[#2D5A27] to-cyan-500 rounded-xl ml-4">
+                            <i class="fas fa-calendar-check text-white text-2xl"></i>
                         </div>
                     </div>
                 </div>
 
                 @if($customers->count() > 0)
                     <!-- Customer Cards -->
-                    <div class="space-y-3 lg:space-y-4">
+                    <div class="space-y-4">
                         @foreach($customers as $customer)
                         <div class="customer-card {{ $customer->is_overdue ? 'overdue' : 'today' }} rounded-lg shadow-sm p-4 lg:p-6">
                             <div class="space-y-4">
@@ -317,39 +368,36 @@
                                     <div class="flex-1">
                                         <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $customer->nama ?? 'No Name' }}</h3>
                                         <div class="flex flex-wrap items-center gap-2">
-                                            <span class="inline-flex px-2 lg:px-3 py-1 text-xs font-semibold rounded-full {{ $customer->status_color }}">
+                                            <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full {{ $customer->status_color }}">
                                                 {{ $customer->status_display }}
                                             </span>
                                             @if($customer->is_overdue)
-                                                <span class="inline-flex items-center px-2 lg:px-3 py-1 text-xs bg-red-100 text-red-800 rounded-full">
-                                                    <i class="fas fa-exclamation-triangle mr-1"></i>
-                                                    <span class="hidden sm:inline">Overdue</span>
-                                                    <span class="sm:hidden">Late</span>
+                                                <span class="inline-flex items-center px-3 py-1 text-xs bg-red-100 text-red-800 rounded-full">
+                                                    <i class="fas fa-exclamation-triangle mr-1"></i>Overdue
                                                 </span>
                                             @else
-                                                <span class="inline-flex items-center px-2 lg:px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                                                <span class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full">
                                                     <i class="fas fa-clock mr-1"></i>Today
                                                 </span>
                                             @endif
                                             @php
-                                        $isCompleted = $customer->activityLogs->firstWhere('description', 'Marked follow-up as completed');
-                                    @endphp
-
-                                    @if($isCompleted)
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            <i class="fas fa-check mr-1"></i> Completed </span>
-                                    @endif
-                                    
+                                                $isCompleted = $customer->activityLogs->firstWhere('description', 'Marked follow-up as completed');
+                                            @endphp
+                                            @if($isCompleted)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    <i class="fas fa-check mr-1"></i>Completed
+                                                </span>
+                                            @endif
                                         </div>
                                     </div>
                                     <div class="text-left sm:text-right text-sm text-gray-500">
-                                        <p class="font-medium">{{ $customer->followup_date->format('H:i') }}</p>
-                                        <p class="text-xs">{{ $customer->followup_date->diffForHumans() }}</p>
+                                        <p class="font-medium">{{ $customer->today_followup_date ? $customer->today_followup_date->format('d M Y') : 'Today' }}</p>
+                                        <p class="text-xs">Follow-up scheduled</p>
                                     </div>
                                 </div>
 
                                 <!-- Customer Details -->
-                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                     <div class="space-y-2">
                                         <div class="flex items-center text-sm text-gray-600">
                                             <i class="fas fa-envelope mr-2 text-gray-400 w-4 flex-shrink-0"></i>
@@ -388,7 +436,7 @@
 
                                 <!-- Notes -->
                                 @if($customer->notes)
-                                    <div class="bg-gradient-to-r from-gray-50 to-gray-50 border border-gray-100 p-3 lg:p-4 rounded-lg">
+                                    <div class="bg-gradient-to-r from-gray-50 to-gray-50 border border-gray-100 p-4 rounded-lg">
                                         <div class="flex items-start">
                                             <i class="fas fa-sticky-note mr-2 text-gray-400 mt-0.5 flex-shrink-0"></i>
                                             <div class="min-w-0 flex-1">
@@ -400,21 +448,17 @@
                                 @endif
 
                                 <!-- Action Buttons -->
-                                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                                     @if($customer->phone)
                                         <a href="{{ $customer->whatsapp_link }}" target="_blank"
                                            class="btn-success text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center">
-                                            <i class="fab fa-whatsapp mr-2"></i>
-                                            <span class="hidden sm:inline">WhatsApp</span>
-                                            <span class="sm:hidden">WA</span>
+                                            <i class="fab fa-whatsapp mr-2"></i>WhatsApp
                                         </a>
                                     @endif
                                     
                                     <button onclick="openQuickUpdate({{ $customer->id }})"
                                             class="btn-neutral text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center">
-                                        <i class="fas fa-edit mr-2"></i>
-                                        <span class="hidden sm:inline">Quick Update</span>
-                                        <span class="sm:hidden">Update</span>
+                                        <i class="fas fa-edit mr-2"></i>Quick Update
                                     </button>
                                     
                                     @if(!$isCompleted)
@@ -423,9 +467,7 @@
                                             @method('PATCH')
                                             <button type="submit"
                                                     class="btn-neutral text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center">
-                                                <i class="fas fa-check mr-2"></i>
-                                                <span class="hidden sm:inline">Mark Completed</span>
-                                                <span class="sm:hidden">Complete</span>
+                                                <i class="fas fa-check mr-2"></i>Mark Completed
                                             </button>
                                         </form>
                                     @endif
@@ -436,19 +478,17 @@
                     </div>
                 @else
                     <!-- Empty State -->
-                    <div class="empty-state rounded-lg shadow-sm p-8 lg:p-12 text-center">
-                        <div class="w-20 h-20 lg:w-24 lg:h-24 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4 lg:mb-6">
-                            <i class="fas fa-calendar-check text-gray-400 text-2xl lg:text-3xl"></i>
+                    <div class="empty-state rounded-lg shadow-sm p-12 text-center">
+                        <div class="w-24 h-24 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-calendar-check text-gray-400 text-3xl"></i>
                         </div>
-                        <h3 class="text-lg lg:text-xl font-semibold text-gray-900 mb-2">Tidak ada follow-up hari ini</h3>
-                        <p class="text-gray-500 mb-4 lg:mb-6 max-w-md mx-auto text-sm lg:text-base">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Tidak ada follow-up hari ini</h3>
+                        <p class="text-gray-500 mb-6 max-w-md mx-auto">
                             Selamat! Anda tidak memiliki follow-up yang dijadwalkan untuk hari ini. 
-                            <span class="hidden sm:inline">Gunakan waktu ini untuk merencanakan strategi follow-up selanjutnya.</span>
+                            Gunakan waktu ini untuk merencanakan strategi follow-up selanjutnya.
                         </p>
-                        <a href="{{ route('dashboard') }}" class="btn-neutral text-white px-4 lg:px-6 py-2.5 lg:py-3 rounded-lg font-medium inline-flex items-center">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            <span class="hidden sm:inline">Kembali ke Dashboard</span>
-                            <span class="sm:hidden">Dashboard</span>
+                        <a href="{{ route('dashboard') }}" class="btn-neutral text-white px-6 py-3 rounded-lg font-medium inline-flex items-center">
+                            <i class="fas fa-arrow-left mr-2"></i>Kembali ke Dashboard
                         </a>
                     </div>
                 @endif
@@ -458,31 +498,30 @@
 
     <!-- Quick Update Modal -->
     <div id="quickUpdateModal" class="fixed inset-0 modal-backdrop hidden overflow-y-auto h-full w-full z-50 p-4">
-        <div class="relative top-4 lg:top-20 mx-auto border-0 w-full max-w-md shadow-2xl rounded-xl bg-white modal-content">
-            <div class="p-4 lg:p-6">
-                <h3 class="text-lg lg:text-xl font-bold text-gray-900 mb-4 lg:mb-6 flex items-center">
-                    <i class="fas fa-edit mr-2 text-gray-600"></i>
-                    Quick Update
+        <div class="relative top-20 mx-auto border-0 w-full max-w-md shadow-2xl rounded-xl bg-white modal-content">
+            <div class="p-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-edit mr-2 text-gray-600"></i>Quick Update
                 </h3>
                 <form id="quickUpdateForm" method="POST">
                     @csrf
                     @method('PATCH')
                     
-                    <div class="mb-4 lg:mb-5">
+                    <div class="mb-5">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Follow-up Notes</label>
                         <textarea name="notes" id="quickNotes" rows="4"
                                   placeholder="Tambahkan catatan follow-up..."
-                                  class="form-input w-full px-3 lg:px-4 py-2.5 lg:py-3 rounded-lg text-sm lg:text-base"></textarea>
+                                  class="form-input w-full px-4 py-3 rounded-lg"></textarea>
                     </div>
                     
-                    <div class="mb-4 lg:mb-5">
+                    <div class="mb-5">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Next Follow-up Date</label>
                         <input type="date" name="followup_date" id="quickFollowupDate"
                                min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
-                               class="form-input w-full px-3 lg:px-4 py-2.5 lg:py-3 rounded-lg text-sm lg:text-base">
+                               class="form-input w-full px-4 py-3 rounded-lg">
                     </div>
                     
-                    <div class="mb-4 lg:mb-6">
+                    <div class="mb-6">
                         <label class="flex items-center">
                             <input type="checkbox" name="fu_checkbox" id="quickFuCheckbox" 
                                    class="mr-3 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
@@ -490,12 +529,12 @@
                         </label>
                     </div>
                     
-                    <div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
+                    <div class="flex justify-end gap-3">
                         <button type="button" onclick="closeQuickUpdate()"
-                                class="btn-neutral text-white px-4 lg:px-6 py-2.5 rounded-lg order-2 sm:order-1">
+                                class="btn-neutral text-white px-6 py-2.5 rounded-lg">
                             Cancel
                         </button>
-                        <button type="submit" class="btn-neutral text-white px-4 lg:px-6 py-2.5 rounded-lg order-1 sm:order-2">
+                        <button type="submit" class="btn-neutral text-white px-6 py-2.5 rounded-lg">
                             Update Customer
                         </button>
                     </div>
@@ -505,36 +544,12 @@
     </div>
 
     <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('sidebar-hidden');
+        }
+
         const customers = @json($customers);
-        
-        // Mobile sidebar functionality
-        const sidebar = document.getElementById('sidebar');
-        const mobileOverlay = document.getElementById('mobileOverlay');
-        const openSidebarBtn = document.getElementById('openSidebar');
-        const closeSidebarBtn = document.getElementById('closeSidebar');
-        
-        function openSidebar() {
-            sidebar.classList.add('open');
-            mobileOverlay.classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeSidebar() {
-            sidebar.classList.remove('open');
-            mobileOverlay.classList.remove('open');
-            document.body.style.overflow = '';
-        }
-        
-        openSidebarBtn?.addEventListener('click', openSidebar);
-        closeSidebarBtn?.addEventListener('click', closeSidebar);
-        mobileOverlay?.addEventListener('click', closeSidebar);
-        
-        // Close sidebar on window resize if desktop
-        window.addEventListener('resize', () => {
-            if (window.innerWidth >= 1024) {
-                closeSidebar();
-            }
-        });
         
         function openQuickUpdate(customerId) {
             const customer = customers.find(c => c.id === customerId);
@@ -546,35 +561,24 @@
             document.getElementById('quickFuCheckbox').checked = false;
             
             document.getElementById('quickUpdateModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
         }
         
         function closeQuickUpdate() {
             document.getElementById('quickUpdateModal').classList.add('hidden');
-            document.body.style.overflow = '';
         }
         
-        // Close modal when clicking outside
         document.getElementById('quickUpdateModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeQuickUpdate();
             }
         });
-        
-        // Close modal with escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeQuickUpdate();
-                closeSidebar();
-            }
-        });
     </script>
 
     @if(session('success'))
-        <div class="fixed top-4 right-4 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 lg:px-6 py-3 lg:py-4 rounded-xl shadow-2xl z-50 success-toast max-w-sm">
+        <div class="fixed top-6 right-6 bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-xl shadow-2xl z-50 success-toast">
             <div class="flex items-center">
-                <i class="fas fa-check-circle mr-2 flex-shrink-0"></i>
-                <span class="text-sm lg:text-base">{{ session('success') }}</span>
+                <i class="fas fa-check-circle mr-2"></i>
+                {{ session('success') }}
             </div>
         </div>
         <script>

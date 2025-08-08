@@ -14,6 +14,41 @@
             background: #f8fafc;
         }
         
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .sidebar-hidden {
+            transform: translateX(-100%);
+        }
+
+        .hamburger {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100%;
+                z-index: 1000;
+                width: 280px;
+            }
+
+            .sidebar-hidden {
+                transform: translateX(-100%);
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+            }
+        }
+        
         .sidebar-link {
             transition: all 0.2s ease;
             border-radius: 8px;
@@ -212,17 +247,98 @@
             border-radius: 8px;
             background: #f9fafb;
         }
+
+        /* === Responsive Utilities === */
+        @media (max-width: 1024px) {
+            .sidebar-link {
+                font-size: 15px;
+                padding: 10px 12px;
+            }
+
+            .stat-card {
+                margin-bottom: 1rem;
+            }
+
+            .pagination-container {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .btn-primary,
+            .btn-secondary,
+            .btn-danger {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+
+            .form-input {
+                width: 100%;
+                font-size: 14px;
+            }
+
+            .modal-content {
+                width: 90%;
+                margin: auto;
+            }
+
+            .stat-card {
+                width: 100%;
+                font-size: 14px;
+            }
+
+            .pagination-btn {
+                min-width: 32px;
+                height: 32px;
+                font-size: 13px;
+            }
+
+            .sidebar-link {
+                display: block;
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn-primary,
+            .btn-secondary,
+            .btn-danger {
+                font-size: 13px;
+                padding: 10px;
+            }
+
+            .table-row {
+                display: block;
+                padding: 10px;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .sidebar-link {
+                font-size: 13px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <div class="w-72 bg-white shadow-lg border-r border-gray-200">
-            <div class="p-6 border-b border-gray-100">
-                <h1 class="text-xl font-bold bg-gradient-to-r from-[#2D5A27] to-cyan-600 bg-clip-text text-transparent">
-                    Traders Family
-                </h1>
-                <p class="text-sm text-gray-600 mt-1">Agent: {{ Auth::user()->name }}</p>
+        <div class="w-72 bg-white shadow-lg border-r border-gray-200 sidebar" id="sidebar">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                <div>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-[#2D5A27] to-cyan-600 bg-clip-text text-transparent">
+                        Traders Family
+                    </h1>
+                    <p class="text-sm text-gray-600 mt-1">Agent: {{ Auth::user()->name }}</p>
+                </div>
+                <button class="hamburger md:hidden" onclick="toggleSidebar()">
+                    <i class="fas fa-times text-gray-600 text-lg"></i>
+                </button>
             </div>
             
             <nav class="mt-6 px-4">
@@ -240,9 +356,6 @@
                 <a href="{{ route('dashboard.archived') }}" class="sidebar-link flex items-center px-4 py-3 text-gray-700 font-medium">
                     <i class="fas fa-archive mr-3"></i>
                     Arsip Customer
-                    @if($stats['archived_count'] > 0)
-                        <span class="ml-auto bg-gray-500 text-white text-xs px-2 py-1 rounded-full">{{ $stats['archived_count'] }}</span>
-                    @endif
                 </a>
             </nav>
             
@@ -259,12 +372,17 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 overflow-y-auto bg-gray-50">
+        <div class="flex-1 overflow-y-auto bg-gray-50 main-content" id="main-content">
             <div class="p-6">
                 <!-- Header -->
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900">Dashboard Agent</h2>
-                    <p class="text-gray-600 mt-1">Kelola customer dan follow-up Anda dengan mudah</p>
+                <div class="mb-6 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Dashboard Agent</h2>
+                        <p class="text-gray-600 mt-1">Kelola customer dan follow-up Anda dengan mudah</p>
+                    </div>
+                    <button class="hamburger md:hidden" onclick="toggleSidebar()">
+                        <i class="fas fa-bars text-gray-600 text-lg"></i>
+                    </button>
                 </div>
 
                 <!-- Statistics Cards -->
@@ -459,9 +577,9 @@
                                     <td class="px-6 py-4">
                                         @php
                                             $hasFu = false;
-                                            $followupDates = json_decode($customer->followup_date, true) ?? [];
-                                            if (!empty($followupDates)) {
-                                                $hasFu = true;
+                                           $followupDates = json_decode($customer->followup_date, true) ?? [];
+                                        if (!empty($followupDates)) {
+                                            $hasFu = true;
                                             }
                                             foreach(['fu_ke_1', 'fu_ke_2', 'fu_ke_3', 'fu_ke_4', 'fu_ke_5'] as $fu_field) {
                                                 if ($customer->$fu_field) {
@@ -476,6 +594,11 @@
                                             @php
                                                 try {
                                                     $date = \Carbon\Carbon::parse($dateObj['date']);
+                                                    $dateString = $date->format('Y-m-d');
+                                                    $isCompletedFromLog = \App\Models\ActivityLog::where('customer_id', $customer->id)
+                                                    ->where('description', 'Marked follow-up as completed')
+                                                    ->whereDate('created_at', $dateString)
+                                                    ->exists();
                                                     $is_overdue = $date->isPast() && !$date->isToday() && !($dateObj['completed'] ?? false);
                                                     $is_today = $date->isToday();
                                                     $is_pending = !$is_overdue && !$is_today && !($dateObj['completed'] ?? false);
@@ -484,6 +607,7 @@
                                                     $is_overdue = false;
                                                     $is_today = false;
                                                     $is_pending = false;
+                                                    $isCompletedFromLog = false;
                                                 }
                                             @endphp
                                             @if($date)
@@ -497,7 +621,7 @@
                                                         <i class="fas fa-clock text-blue-500 ml-1"></i>
                                                     @endif
                                                 </div>
-                                                @if($dateObj['completed'] ?? false)
+                                                @if($isCompletedFromLog)
                                                     <span class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
                                                         <i class="fas fa-check mr-1"></i>Completed FU Tambahan {{ $index + 1 }}
                                                     </span>
@@ -664,6 +788,11 @@
 </div>
 
 <script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('sidebar-hidden');
+    }
+
     const customers = @json($customers->items());
     
     function openEditModal(customerId) {
@@ -702,12 +831,6 @@
         followupDiv.innerHTML = `
             <input type="date" name="followup_date[${inputIndex}][date]" value="${date}" 
                    class="form-input flex-1 px-4 py-2 rounded-lg">
-            <label class="flex items-center">
-                <input type="checkbox" name="followup_date[${inputIndex}][completed]" 
-                       ${completed ? 'checked' : ''} 
-                       class="mr-2 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
-                <span class="text-sm text-gray-700">Completed</span>
-            </label>
             <button type="button" onclick="this.parentElement.remove()" 
                     class="text-red-500 hover:text-red-700">
                 <i class="fas fa-trash"></i>

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Customer;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -50,44 +51,186 @@ class DashboardController extends Controller
         }
         
         // Filter berdasarkan status follow up
-        if ($request->filled('followup_status')) {
-            if ($request->followup_status === 'pending') {
-            $query->whereJsonContains('followup_date', Carbon::today()->toDateString());
-            } elseif ($request->followup_status === 'overdue') {
-                $query->whereNotNull('followup_date')
-                      ->where('followup_date', '<', Carbon::today());
-            } elseif ($request->followup_status === 'completed') {
-                $query->where('fu_checkbox', true);
+         if ($request->filled('followup_status')) {
+        if ($request->followup_status === 'pending') {
+            // Check both JSON followup_date and individual FU fields for today's date
+            $today = Carbon::today()->toDateString();
+            $query->where(function($q) use ($today) {
+                // Check JSON followup dates
+                $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(followup_date, '$[*].date')) LIKE ?", ["%{$today}%"])
+                  // Check individual FU fields
+                  ->orWhereDate('fu_ke_1', $today)
+                  ->orWhereDate('fu_ke_2', $today)
+                  ->orWhereDate('fu_ke_3', $today)
+                  ->orWhereDate('fu_ke_4', $today)
+                  ->orWhereDate('fu_ke_5', $today);
+            });
+        } elseif ($request->followup_status === 'overdue') {
+            $today = Carbon::today();
+            $query->where(function($q) use ($today) {
+                // Check JSON followup dates for overdue
+                $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(followup_date, '$[*].date')) < ? AND JSON_UNQUOTE(JSON_EXTRACT(followup_date, '$[*].completed')) != 'true'", [$today->toDateString()])
+                  // Check individual FU fields for overdue (not completed)
+                  ->orWhere(function($subQ) use ($today) {
+                      $subQ->where('fu_ke_1', '<', $today)->where('fu_checkbox_1', '!=', true);
+                  })
+                  ->orWhere(function($subQ) use ($today) {
+                      $subQ->where('fu_ke_2', '<', $today)->where('fu_checkbox_2', '!=', true);
+                  })
+                  ->orWhere(function($subQ) use ($today) {
+                      $subQ->where('fu_ke_3', '<', $today)->where('fu_checkbox_3', '!=', true);
+                  })
+                  ->orWhere(function($subQ) use ($today) {
+                      $subQ->where('fu_ke_4', '<', $today)->where('fu_checkbox_4', '!=', true);
+                  })
+                  ->orWhere(function($subQ) use ($today) {
+                      $subQ->where('fu_ke_5', '<', $today)->where('fu_checkbox_5', '!=', true);
+                  });
+            });
+        } elseif ($request->followup_status === 'completed') {
+            $query->where(function($q) {
+                $q->where('fu_checkbox_1', true)
+                  ->orWhere('fu_checkbox_2', true)
+                  ->orWhere('fu_checkbox_3', true)
+                  ->orWhere('fu_checkbox_4', true)
+                  ->orWhere('fu_checkbox_5', true)
+                  // Also check for completed JSON followups
+                  ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(followup_date, '$[*].completed')) = 'true'");
+            });
+        }
+    }
+    
+    $customers = $query->orderBy('created_at', 'desc')->paginate(15);
+    
+    // Get all active customers for statistics calculation
+    $allActiveCustomers = Customer::where('user_id', $user->id)->active()->get();
+    
+    // Statistics untuk dashboard
+    $stats = [
+        'total_customers' => $allActiveCustomers->count(),
+        'normal_status' => $allActiveCustomers->whereIn('status_fu', ['normal', 'normal(prospect)'])->count(),
+        'warm_status' => $allActiveCustomers->whereIn('status_fu', ['warm', 'warm(potential)'])->count(),
+        'hot_status' => $allActiveCustomers->whereIn('status_fu', ['hot', 'hot(closeable)'])->count(),
+        'followup_today' => $this->calculateFollowupToday($allActiveCustomers),
+        'overdue_followup' => $this->calculateOverdueFollowup($allActiveCustomers),
+        'archived_count' => Customer::where('user_id', $user->id)->archived()->count()
+    ];
+    
+    // Available months untuk filter
+    $availableMonths = Customer::where('user_id', $user->id)->active()
+        ->whereNotNull('sheet_month')
+        ->distinct()
+        ->pluck('sheet_month')
+        ->sort();
+    
+    return view('dashboard.agent', compact('customers', 'stats', 'availableMonths'));
+}
+
+/**
+ * Calculate follow-up today count from both JSON and individual fields
+ */
+private function calculateFollowupToday($customers)
+{
+    $today = Carbon::today();
+    $count = 0;
+    
+    foreach ($customers as $customer) {
+        $hasFollowupToday = false;
+        
+        // Check JSON followup_date
+        if ($customer->followup_date) {
+            $followupDates = json_decode($customer->followup_date, true) ?? [];
+            foreach ($followupDates as $dateObj) {
+                try {
+                    $date = Carbon::parse($dateObj['date']);
+                    if ($date->isToday() && !($dateObj['completed'] ?? false)) {
+                        $hasFollowupToday = true;
+                        break;
+                    }
+                } catch (\Exception $e) {
+                    continue;
+                }
             }
         }
         
-        $customers = $query->orderBy('created_at', 'desc')->paginate(15);
+        // Check individual FU fields if no JSON followup found for today
+        if (!$hasFollowupToday) {
+            foreach(['fu_ke_1', 'fu_ke_2', 'fu_ke_3', 'fu_ke_4', 'fu_ke_5'] as $index => $fu_field) {
+                if ($customer->$fu_field) {
+                    try {
+                        $date = Carbon::parse($customer->$fu_field);
+                        $checkboxField = 'fu_checkbox_' . ($index + 1);
+                        if ($date->isToday() && !$customer->$checkboxField) {
+                            $hasFollowupToday = true;
+                            break;
+                        }
+                    } catch (\Exception $e) {
+                        continue;
+                    }
+                }
+            }
+        }
         
-        // Statistics untuk dashboard
-        $stats = [
-            'total_customers' => Customer::where('user_id', $user->id)->active()->count(),
-            'normal_status' => Customer::where('user_id', $user->id)->active()
-                ->whereIn('status_fu', ['normal', 'normal(prospect)'])->count(),
-            'warm_status' => Customer::where('user_id', $user->id)->active()
-                ->whereIn('status_fu', ['warm', 'warm(potential)'])->count(),
-            'hot_status' => Customer::where('user_id', $user->id)->active()
-                ->whereIn('status_fu', ['hot', 'hot(closeable)'])->count(),
-            'followup_today' => Customer::where('user_id', $user->id)->active()
-                ->whereDate('followup_date', Carbon::today())->count(),
-            'overdue_followup' => Customer::where('user_id', $user->id)->active()
-                ->where('followup_date', '<', Carbon::today())->count(),
-            'archived_count' => Customer::where('user_id', $user->id)->archived()->count()
-        ];
-        
-        // Available months untuk filter
-        $availableMonths = Customer::where('user_id', $user->id)->active()
-            ->whereNotNull('sheet_month')
-            ->distinct()
-            ->pluck('sheet_month')
-            ->sort();
-        
-        return view('dashboard.agent', compact('customers', 'stats', 'availableMonths'));
+        if ($hasFollowupToday) {
+            $count++;
+        }
     }
+    
+    return $count;
+}
+
+/**
+ * Calculate overdue follow-up count from both JSON and individual fields
+ */
+private function calculateOverdueFollowup($customers)
+{
+    $today = Carbon::today();
+    $count = 0;
+    
+    foreach ($customers as $customer) {
+        $hasOverdueFollowup = false;
+        
+        // Check JSON followup_date
+        if ($customer->followup_date) {
+            $followupDates = json_decode($customer->followup_date, true) ?? [];
+            foreach ($followupDates as $dateObj) {
+                try {
+                    $date = Carbon::parse($dateObj['date']);
+                    if ($date->isPast() && !$date->isToday() && !($dateObj['completed'] ?? false)) {
+                        $hasOverdueFollowup = true;
+                        break;
+                    }
+                } catch (\Exception $e) {
+                    continue;
+                }
+            }
+        }
+        
+        // Check individual FU fields if no JSON overdue found
+        if (!$hasOverdueFollowup) {
+            foreach(['fu_ke_1', 'fu_ke_2', 'fu_ke_3', 'fu_ke_4', 'fu_ke_5'] as $index => $fu_field) {
+                if ($customer->$fu_field) {
+                    try {
+                        $date = Carbon::parse($customer->$fu_field);
+                        $checkboxField = 'fu_checkbox_' . ($index + 1);
+                        if ($date->isPast() && !$date->isToday() && !$customer->$checkboxField) {
+                            $hasOverdueFollowup = true;
+                            break;
+                        }
+                    } catch (\Exception $e) {
+                        continue;
+                    }
+                }
+            }
+        }
+        
+        if ($hasOverdueFollowup) {
+            $count++;
+        }
+    }
+    
+    return $count;
+}
     
     private function adminDashboard(Request $request)
     {
@@ -144,9 +287,11 @@ class DashboardController extends Controller
     public function followupToday()
     {
         $user = Auth::user();
+        $today = Carbon::today()->format('Y-m-d'); // 2025-08-07
         
-        $query = Customer::active()->whereDate('followup_date', Carbon::today());
-
+        // Gunakan pattern yang work
+        $query = Customer::active()
+            ->where('followup_date', 'LIKE', '%' . $today . '%');
         
         $stats = [
             'archived_count' => Customer::where('user_id', $user->id)->archived()->count()
@@ -156,7 +301,9 @@ class DashboardController extends Controller
             $query->where('user_id', $user->id);
         }
         
-        $customers = $query->orderBy('followup_date', 'asc')->get();
+        $customers = $query->orderBy('created_at', 'desc')->get();
+        
+        \Log::info('Final customers found: ' . $customers->count());
         
         return view('dashboard.followup-today', compact('customers', 'stats'));
     }
@@ -164,8 +311,21 @@ class DashboardController extends Controller
     public function archived(Request $request)
     {
         $user = Auth::user();
+        $today = Carbon::today()->toDateString();
         
         $query = Customer::archived();
+
+        
+        $stats = [
+        'archived_count' => Customer::where('user_id', $user->id)->archived()->count(),
+        'followup_today' => Customer::where('user_id', $user->id)
+        ->where('is_archived', 0)
+        ->where(function ($query) use ($today) {
+            $query->whereRaw("JSON_CONTAINS(followup_date, '{\"date\": \"$today\"}')");
+        })
+        ->count()
+    ];
+
         
         if ($user->role === 'agent') {
             $query->where('user_id', $user->id);
@@ -180,7 +340,7 @@ class DashboardController extends Controller
             ->orderBy('archived_at', 'desc')
             ->paginate(15);
         
-        return view('dashboard.archived', compact('customers'));
+        return view('dashboard.archived', compact('customers','stats'));
     }
     
     public function updateCustomer(Request $request, Customer $customer)
