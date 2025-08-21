@@ -502,12 +502,12 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Bulan Sheet</label>
-                                <select name="month" class="form-input w-full px-4 py-2.5 rounded-lg">
+                                {{-- <select name="month" class="form-input w-full px-4 py-2.5 rounded-lg">
                                     <option value="">Semua Bulan</option>
                                     @foreach($availableMonths as $month)
                                         <option value="{{ $month }}" {{ request('month') == $month ? 'selected' : '' }}>{{ $month }}</option>
                                     @endforeach
-                                </select>
+                                </select> --}}
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Status Follow-up</label>
