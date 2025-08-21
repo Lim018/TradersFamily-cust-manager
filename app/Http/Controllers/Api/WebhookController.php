@@ -39,8 +39,8 @@ class WebhookController extends Controller
                 'fu_checkbox_4' => 'nullable|boolean',
                 'fu_ke_5' => 'nullable|string',
                 'fu_checkbox_5' => 'nullable|boolean',
-                'sheet_month' => 'nullable|string',
-                'notes' => 'nullable|string'
+                // 'sheet_month' => 'nullable|string',
+                // 'notes' => 'nullable|string'
             ]);
 
             // Find user by agent_code
@@ -58,7 +58,7 @@ class WebhookController extends Controller
                             ->first();
 
             $validated['user_id'] = $user->id;
-            $validated['followup_date'] = null;
+            // $validated['followup_date'] = null;
 
             if ($customer) {
                 // Update existing customer
@@ -69,7 +69,7 @@ class WebhookController extends Controller
                     'user_id' => $user->id,
                     'customer_id' => $customer->id,
                     'action' => 'updated_from_spreadsheet',
-                    'description' => "Customer data updated from {$validated['sheet_month']} sheet",
+                    'description' => "Customer data updated from sheet",
                     'old_data' => $oldData,
                     'new_data' => $customer->fresh()->toArray()
                 ]);
@@ -81,7 +81,7 @@ class WebhookController extends Controller
                     'user_id' => $user->id,
                     'customer_id' => $customer->id,
                     'action' => 'created_from_spreadsheet',
-                    'description' => "New customer created from {$validated['sheet_month']} sheet",
+                    'description' => "New customer created from sheet",
                     'new_data' => $customer->toArray()
                 ]);
             }

@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('first_visit')->nullable();
             $table->string('interest')->nullable();
             $table->string('offer')->nullable();
-            $table->enum('status_fu', ['normal', 'warm', 'hot', 'normal(prospect)', 'warm(potential)', 'hot(closeable)']);
+            $table->enum('status_fu', ['normal', 'warm', 'hot', 'normal(prospect)', 'warm(potential)', 'hot(closeable)'])->nullable();
             $table->string('tanggal_closing')->nullable();
             $table->string('report')->nullable();
             $table->string('alasan_depo_decline')->nullable();
@@ -37,9 +37,9 @@ return new class extends Migration
             $table->boolean('fu_checkbox_4')->default(false);
             $table->string('fu_ke_5')->nullable();
             $table->boolean('fu_checkbox_5')->default(false);
-            $table->string('sheet_month')->nullable();
-            $table->text('notes')->nullable(); // Manual notes by agent
-            $table->json('followup_date')->nullable(); // Manual follow-up date
+            // $table->string('sheet_month')->nullable();
+            // $table->text('notes')->nullable(); // Manual notes by agent
+            // $table->json('followup_date')->nullable(); // Manual follow-up date
             $table->boolean('is_archived')->default(false);
             $table->timestamp('archived_at')->nullable();
             $table->unsignedBigInteger('archived_by')->nullable();
