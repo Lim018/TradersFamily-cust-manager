@@ -46,9 +46,9 @@ class DashboardController extends Controller
         }
         
         // Filter berdasarkan bulan sheet
-        if ($request->filled('month')) {
-            $query->where('sheet_month', $request->month);
-        }
+        // if ($request->filled('month')) {
+        //     $query->where('sheet_month', $request->month);
+        // }
         
         // Filter berdasarkan status follow up
          if ($request->filled('followup_status')) {
@@ -117,11 +117,11 @@ class DashboardController extends Controller
     ];
     
     // Available months untuk filter
-    $availableMonths = Customer::where('user_id', $user->id)->active()
-        ->whereNotNull('sheet_month')
-        ->distinct()
-        ->pluck('sheet_month')
-        ->sort();
+    // $availableMonths = Customer::where('user_id', $user->id)->active()
+    //     ->whereNotNull('sheet_month')
+    //     ->distinct()
+    //     ->pluck('sheet_month')
+    //     ->sort();
     
     return view('dashboard.agent', compact('customers', 'stats', 'availableMonths'));
 }
@@ -303,7 +303,7 @@ private function calculateOverdueFollowup($customers)
         
         $customers = $query->orderBy('created_at', 'desc')->get();
         
-        \Log::info('Final customers found: ' . $customers->count());
+        Log::info('Final customers found: ' . $customers->count());
         
         return view('dashboard.followup-today', compact('customers', 'stats'));
     }
