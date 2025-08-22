@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
         // Create admin user
         User::create([
             'name' => 'Admin',
-            'email' => 'admin@customersync.com',
+            'email' => 'admin@thebiggest.my.id',
             'password' => Hash::make('password'),
             'role' => 'admin'
         ]);
@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
         // Create agent users
         User::create([
             'name' => 'Agent 1',
-            'email' => 'agent1@customersync.com',
+            'email' => 'agent1@thebiggest.my.id',
             'password' => Hash::make('password'),
             'role' => 'agent',
             'agent_code' => 'AGT001'
@@ -43,7 +43,7 @@ class DatabaseSeeder extends Seeder
 
         User::create([
             'name' => 'Agent 2',
-            'email' => 'agent2@customersync.com',
+            'email' => 'agent2@thebiggest.my.id',
             'password' => Hash::make('password'),
             'role' => 'agent',
             'agent_code' => 'AG002'
@@ -51,7 +51,7 @@ class DatabaseSeeder extends Seeder
 
         User::create([
             'name' => 'Agent 3',
-            'email' => 'agent3@customersync.com',
+            'email' => 'agent3@thebiggest.my.id',
             'password' => Hash::make('password'),
             'role' => 'agent',
             'agent_code' => 'AG003'
