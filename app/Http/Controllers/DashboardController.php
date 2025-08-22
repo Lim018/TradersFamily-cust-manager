@@ -259,7 +259,7 @@ private function calculateOverdueFollowup($customers)
             'normal_status' => Customer::active()->whereIn('status_fu', ['normal', 'normal(prospect)'])->count(),
             'warm_status' => Customer::active()->whereIn('status_fu', ['warm', 'warm(potential)'])->count(),
             'hot_status' => Customer::active()->whereIn('status_fu', ['hot', 'hot(closeable)'])->count(),
-           'followup_today' => Customer::whereJsonContains('followup_date', Carbon::today()->toDateString())->count(),
+        //    'followup_today' => Customer::whereJsonContains('followup_date', Carbon::today()->toDateString())->count(),
             'closed_deals' => Customer::active()->whereNotNull('tanggal_closing')->count(),
             'archived_count' => Customer::archived()->count()
         ];
