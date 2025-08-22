@@ -126,6 +126,24 @@ class DashboardController extends Controller
     return view('dashboard.agent', compact('customers', 'stats'));
 }
 
+public function getNotes($id)
+{
+    $customer = Customer::findOrFail($id);
+
+    $fu_notes = [];
+    foreach (range(2, 5) as $i) {
+        $field = "fu_{$i}_note";
+        if ($customer->$field) {
+            $fu_notes[] = $customer->$field;
+        }
+    }
+
+    return response()->json([
+        'report' => $customer->report,
+        'fu_notes' => $fu_notes,
+    ]);
+}
+
 /**
  * Calculate follow-up today count from both JSON and individual fields
  */
