@@ -627,10 +627,6 @@
                                                     <i class="fab fa-whatsapp mr-1"></i>WA
                                                 </a>
                                             @endif
-                                            <button onclick="openEditModal({{ $customer->id }})"
-                                                    class="btn-primary text-white px-2 py-1 rounded text-xs font-medium flex items-center justify-center">
-                                                <i class="fas fa-edit mr-1"></i>Edit
-                                            </button>
                                             <form method="POST" action="{{ route('customer.archive', $customer->id) }}" class="inline">
                                                 @csrf
                                                 @method('PATCH')
