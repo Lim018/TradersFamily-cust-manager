@@ -22,24 +22,18 @@ return new class extends Migration
             $table->string('first_visit')->nullable();
             $table->string('interest')->nullable();
             $table->string('offer')->nullable();
-            $table->enum('status_fu', ['normal', 'warm', 'hot', 'normal(prospect)', 'warm(potential)', 'hot(closeable)'])->nullable();
+            $table->string('status_fu')->nullable();
             $table->string('tanggal_closing')->nullable();
             $table->string('report')->nullable();
             $table->string('alasan_depo_decline')->nullable();
             $table->integer('fu_jumlah')->default(0);
-            $table->string('fu_ke_1')->nullable();
-            $table->boolean('fu_checkbox_1')->default(false);
-            $table->string('fu_ke_2')->nullable();
-            $table->boolean('fu_checkbox_2')->default(false);
-            $table->string('fu_ke_3')->nullable();
-            $table->boolean('fu_checkbox_3')->default(false);
-            $table->string('fu_ke_4')->nullable();
-            $table->boolean('fu_checkbox_4')->default(false);
-            $table->string('fu_ke_5')->nullable();
-            $table->boolean('fu_checkbox_5')->default(false);
-            // $table->string('sheet_month')->nullable();
-            // $table->text('notes')->nullable(); // Manual notes by agent
-            // $table->json('followup_date')->nullable(); // Manual follow-up date
+
+            for ($i = 1; $i <= 5; $i++) {
+                $table->date("fu_{$i}_date")->nullable();
+                $table->boolean("fu_{$i}_checked")->default(false);
+                $table->string("fu_{$i}_note", 255)->nullable();
+            }
+
             $table->boolean('is_archived')->default(false);
             $table->timestamp('archived_at')->nullable();
             $table->unsignedBigInteger('archived_by')->nullable();

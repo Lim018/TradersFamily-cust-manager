@@ -123,7 +123,7 @@ class DashboardController extends Controller
     //     ->pluck('sheet_month')
     //     ->sort();
     
-    return view('dashboard.agent', compact('customers', 'stats', 'availableMonths'));
+    return view('dashboard.agent', compact('customers', 'stats'));
 }
 
 /**
