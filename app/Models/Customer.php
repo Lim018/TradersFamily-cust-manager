@@ -38,9 +38,6 @@ class Customer extends Model
         'next_fu_5',
         'fu_5_checked',
         'fu_5_note',
-        // 'sheet_month',
-        // 'notes',
-        // 'followup_date',
         'is_archived',
         'archived_at',
         'archived_by'

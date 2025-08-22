@@ -386,7 +386,7 @@
                 </div>
 
                 <!-- Statistics Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4 mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <div class="stat-card p-4 rounded-lg">
                         <div class="flex items-center">
                             <div class="p-2 bg-blue-100 rounded-lg mr-3">
@@ -401,8 +401,8 @@
 
                     <div class="stat-card p-4 rounded-lg">
                         <div class="flex items-center">
-                            <div class="p-2 bg-gray-100 rounded-lg mr-3">
-                                <i class="fas fa-thermometer-half text-gray-600 text-lg"></i>
+                            <div class="p-2 bg-green-100 rounded-lg mr-3">
+                                <i class="fas fa-thermometer-half text-green-600 text-lg"></i>
                             </div>
                             <div>
                                 <p class="text-2xl font-bold text-gray-900">{{ $stats['normal_status'] }}</p>
@@ -434,42 +434,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="stat-card p-4 rounded-lg">
-                        <div class="flex items-center">
-                            <div class="p-2 bg-green-100 rounded-lg mr-3">
-                                <i class="fas fa-calendar-check text-green-600 text-lg"></i>
-                            </div>
-                            <div>
-                                <p class="text-2xl font-bold text-gray-900">{{ $stats['followup_today'] }}</p>
-                                <p class="text-sm text-gray-600">Follow-up Hari Ini</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="stat-card p-4 rounded-lg">
-                        <div class="flex items-center">
-                            <div class="p-2 bg-red-100 rounded-lg mr-3">
-                                <i class="fas fa-exclamation-triangle text-red-600 text-lg"></i>
-                            </div>
-                            <div>
-                                <p class="text-2xl font-bold text-gray-900">{{ $stats['overdue_followup'] }}</p>
-                                <p class="text-sm text-gray-600">Overdue</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="stat-card p-4 rounded-lg">
-                        <div class="flex items-center">
-                            <div class="p-2 bg-purple-100 rounded-lg mr-3">
-                                <i class="fas fa-archive text-purple-600 text-lg"></i>
-                            </div>
-                            <div>
-                                <p class="text-2xl font-bold text-gray-900">{{ $stats['archived_count'] }}</p>
-                                <p class="text-sm text-gray-600">Arsip</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Filters -->
@@ -490,33 +454,6 @@
                                            placeholder="Nama customer..."
                                            class="form-input w-full pl-10 pr-4 py-2.5 rounded-lg">
                                 </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                                <select name="status" class="form-input w-full px-4 py-2.5 rounded-lg">
-                                    <option value="">Semua Status</option>
-                                    <option value="normal" {{ request('status') == 'normal' ? 'selected' : '' }}>Normal</option>
-                                    <option value="warm" {{ request('status') == 'warm' ? 'selected' : '' }}>Warm</option>
-                                    <option value="hot" {{ request('status') == 'hot' ? 'selected' : '' }}>Hot</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Bulan Sheet</label>
-                                {{-- <select name="month" class="form-input w-full px-4 py-2.5 rounded-lg">
-                                    <option value="">Semua Bulan</option>
-                                    @foreach($availableMonths as $month)
-                                        <option value="{{ $month }}" {{ request('month') == $month ? 'selected' : '' }}>{{ $month }}</option>
-                                    @endforeach
-                                </select> --}}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Status Follow-up</label>
-                                <select name="followup_status" class="form-input w-full px-4 py-2.5 rounded-lg">
-                                    <option value="">Semua</option>
-                                    <option value="pending" {{ request('followup_status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                                    <option value="overdue" {{ request('followup_status') == 'overdue' ? 'selected' : '' }}>Overdue</option>
-                                    <option value="completed" {{ request('followup_status') == 'completed' ? 'selected' : '' }}>Completed</option>
-                                </select>
                             </div>
                             <div class="md:col-span-2 lg:col-span-4 flex gap-3 pt-2">
                                 <button type="submit" class="btn-primary text-white px-6 py-2.5 rounded-lg flex items-center">
