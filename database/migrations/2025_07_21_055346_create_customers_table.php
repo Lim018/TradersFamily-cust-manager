@@ -33,7 +33,7 @@ return new class extends Migration
             for ($i = 2; $i <= 5; $i++) {
                 $table->date("next_fu_{$i}")->nullable();
                 $table->boolean("fu_{$i}_checked")->default(false);
-                $table->string("fu_{$i}_note", 255)->nullable();
+                $table->longText("fu_{$i}_note")->nullable();
             }
 
             $table->boolean('is_archived')->default(false);
