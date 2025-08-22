@@ -293,10 +293,10 @@
                         <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">{{ $customers->count() }}</span>
                     @endif
                 </a>
-                <a href="{{ route('dashboard.archived') }}" class="sidebar-link flex items-center px-4 py-3 text-gray-700 font-medium">
+                {{-- <a href="{{ route('dashboard.archived') }}" class="sidebar-link flex items-center px-4 py-3 text-gray-700 font-medium">
                     <i class="fas fa-archive mr-3"></i>
-                    Arsip Customer
-                </a>
+                    Investor
+                </a> --}}
             </nav>
             
             <!-- Logout -->
