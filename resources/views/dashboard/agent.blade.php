@@ -479,150 +479,163 @@
                         <table class="min-w-full">
                             <thead class="bg-gray-50 border-b border-gray-100">
                                 <tr>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Customer</th>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kontak</th>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Follow-up</th>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Customer Info</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kontak</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Interest & Offer</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Follow-up</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Notes</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
                                 @forelse($customers as $customer)
-                                <tr class="table-row">
-                                    <td class="px-6 py-4">
-                                        <div>
-                                            <div class="text-sm font-semibold text-gray-900">{{ $customer->nama ?? 'No Name' }}</div>
-                                            <div class="text-sm text-gray-500">{{ $customer->regis }}</div>
-                                            <div class="text-sm text-gray-500">{{ $customer->interest }}</div>
-                                        </div>
+                                <tr class="table-row hover:bg-gray-50">
+                                    <!-- Tanggal -->
+                                    <td class="px-4 py-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ $customer->tanggal ?? '-' }}</div>
+                                        <div class="text-xs text-gray-500">{{ $customer->regis ?? '-' }}</div>
                                     </td>
-                                    <td class="px-6 py-4">
+                                    
+                                    <!-- Customer Info -->
+                                    <td class="px-4 py-4">
+                                        <div class="text-sm font-semibold text-gray-900">{{ $customer->nama ?? 'No Name' }}</div>
+                                        <div class="text-xs text-gray-500">Reg: {{ $customer->regis ?? '-' }}</div>
+                                    </td>
+                                    
+                                    <!-- Kontak -->
+                                    <td class="px-4 py-4">
                                         <div class="flex items-center text-sm text-gray-900 mb-1">
                                             <i class="fas fa-envelope mr-2 text-gray-400"></i>
-                                            {{ $customer->email }}
+                                            <span class="truncate max-w-32">{{ $customer->email ?? '-' }}</span>
                                         </div>
                                         <div class="flex items-center text-sm text-gray-500">
                                             <i class="fas fa-phone mr-2 text-gray-400"></i>
-                                            {{ $customer->phone }}
+                                            {{ $customer->phone ?? '-' }}
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4">
-                                        <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full {{ $customer->status_color }}">
-                                            {{ $customer->status_display }}
+                                    
+                                    <!-- Interest & Offer -->
+                                    <td class="px-4 py-4">
+                                        <div class="text-sm text-gray-900">
+                                            <div class="flex items-center mb-1">
+                                                <i class="fas fa-heart mr-2 text-gray-400"></i>
+                                                <span class="text-xs truncate max-w-24">{{ $customer->interest ?? '-' }}</span>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <i class="fas fa-tag mr-2 text-gray-400"></i>
+                                                <span class="text-xs truncate max-w-24">{{ $customer->offer ?? '-' }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    
+                                    <!-- Status -->
+                                    <td class="px-4 py-4">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $customer->status_color }}">
+                                            {{ $customer->status_display ?? $customer->status_fu ?? 'No Status' }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4">
-                                        @php
-                                            $hasFu = false;
-                                           $followupDates = json_decode($customer->followup_date, true) ?? [];
-                                        if (!empty($followupDates)) {
-                                            $hasFu = true;
-                                            }
-                                            foreach(['fu_ke_1', 'fu_ke_2', 'fu_ke_3', 'fu_ke_4', 'fu_ke_5'] as $fu_field) {
-                                                if ($customer->$fu_field) {
-                                                    $hasFu = true;
-                                                }
-                                            }
-                                        @endphp
-                                        @if(!$hasFu)
-                                            <div class="text-sm text-gray-500">No Follow-up Data</div>
+                                    
+                                    <!-- Follow-up -->
+                                    <td class="px-4 py-4">
+                                        <div class="text-xs text-gray-600 mb-1">Total FU: {{ $customer->fu_jumlah ?? 0 }}</div>
+                                        
+                                        <!-- FU ke-1 -->
+                                        @if($customer->fu_ke_1)
+                                            @php
+                                                $date1 = \Carbon\Carbon::parse($customer->fu_ke_1);
+                                                $is_overdue1 = $date1->isPast() && !$date1->isToday();
+                                                $is_today1 = $date1->isToday();
+                                            @endphp
+                                            <div class="text-xs text-green-600 mb-1">
+                                                FU-1: {{ $date1->format('d/m/Y') }}
+                                                {{-- @if($is_overdue1)
+                                                    <i class="fas fa-exclamation-triangle ml-1"></i>
+                                                @elseif($is_today1)
+                                                    <i class="fas fa-calendar-day ml-1"></i>
+                                                @endif --}}
+                                            </div>
                                         @endif
+                                        
+                                        <!-- Next FU 2-5 -->
+                                        @for($i = 2; $i <= 5; $i++)
+                                            @php $next_fu_field = "next_fu_{$i}"; @endphp
+                                            @if($customer->$next_fu_field)
+                                                @php
+                                                    $date = \Carbon\Carbon::parse($customer->$next_fu_field);
+                                                    $is_today = $date->isToday();
+                                                    $is_past = $date->isPast() && !$date->isToday();
+                                                    $is_checked = $customer->{"fu_{$i}_checked"};
+                                                @endphp
+                                                <div class="text-xs 
+                                                    {{ $is_past ? 'text-green-600' : ($is_today ? 'text-blue-600' : 'text-blue-600') }} mb-1">
+                                                    FU-{{ $i }}: {{ $date->format('d/m/Y') }}
+                                                    @if($is_today)
+                                                        <i class="fas fa-calendar-day ml-1"></i>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        @endfor
+                                        
+                                        <!-- Additional followup dates from JSON -->
+                                        @php
+                                            $followupDates = json_decode($customer->followup_date, true) ?? [];
+                                        @endphp
                                         @foreach($followupDates as $index => $dateObj)
                                             @php
                                                 try {
                                                     $date = \Carbon\Carbon::parse($dateObj['date']);
-                                                    $dateString = $date->format('Y-m-d');
-                                                    $isCompletedFromLog = \App\Models\ActivityLog::where('customer_id', $customer->id)
-                                                    ->where('description', 'Marked follow-up as completed')
-                                                    ->whereDate('created_at', $dateString)
-                                                    ->exists();
-                                                    $is_overdue = $date->isPast() && !$date->isToday() && !($dateObj['completed'] ?? false);
+                                                    $is_completed = $dateObj['completed'] ?? false;
+                                                    $is_overdue = $date->isPast() && !$date->isToday() && !$is_completed;
                                                     $is_today = $date->isToday();
-                                                    $is_pending = !$is_overdue && !$is_today && !($dateObj['completed'] ?? false);
                                                 } catch (\Exception $e) {
-                                                    $date = null;
-                                                    $is_overdue = false;
-                                                    $is_today = false;
-                                                    $is_pending = false;
-                                                    $isCompletedFromLog = false;
+                                                    continue;
                                                 }
                                             @endphp
-                                            @if($date)
-                                                <div class="text-sm {{ $is_overdue ? 'text-red-600 font-semibold' : ($is_today ? 'text-green-600 font-semibold' : ($is_pending ? 'text-blue-600 font-semibold' : 'text-gray-900')) }}">
-                                                    FU Tambahan {{ $index + 1 }}: {{ $date->format('d M Y') }}
-                                                    @if($is_overdue)
-                                                        <i class="fas fa-exclamation-triangle text-red-500 ml-1"></i>
-                                                    @elseif($is_today)
-                                                        <i class="fas fa-calendar-day text-green-500 ml-1"></i>
-                                                    @elseif($is_pending)
-                                                        <i class="fas fa-clock text-blue-500 ml-1"></i>
-                                                    @endif
-                                                </div>
-                                                @if($isCompletedFromLog)
-                                                    <span class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
-                                                        <i class="fas fa-check mr-1"></i>Completed FU Tambahan {{ $index + 1 }}
-                                                    </span>
+                                            <div class="text-xs {{ $is_overdue ? 'text-red-600' : ($is_today ? 'text-green-600' : 'text-blue-600') }} mb-1">
+                                                Extra-{{ $index + 1 }}: {{ $date->format('d/m/Y') }}
+                                                @if($is_completed)
+                                                    <i class="fas fa-check text-green-500 ml-1"></i>
+                                                @elseif($is_overdue)
+                                                    <i class="fas fa-exclamation-triangle ml-1"></i>
+                                                @elseif($is_today)
+                                                    <i class="fas fa-calendar-day ml-1"></i>
                                                 @endif
-                                            @else
-                                                <div class="text-sm text-red-600">Invalid date for FU Tambahan {{ $index + 1 }}</div>
-                                            @endif
-                                        @endforeach
-                                        @foreach(['fu_ke_1', 'fu_ke_2', 'fu_ke_3', 'fu_ke_4', 'fu_ke_5'] as $index => $fu_field)
-                                            @if($customer->$fu_field)
-                                                @php
-                                                    try {
-                                                        $date = \Carbon\Carbon::parse($customer->$fu_field);
-                                                        $is_overdue = $date->isPast() && !$date->isToday() && !$customer->{'fu_checkbox_' . ($index + 1)};
-                                                        $is_today = $date->isToday();
-                                                        $is_pending = !$is_overdue && !$is_today && !$customer->{'fu_checkbox_' . ($index + 1)};
-                                                        $fu_number = $index + 1;
-                                                    } catch (\Exception $e) {
-                                                        $date = null;
-                                                        $is_overdue = false;
-                                                        $is_today = false;
-                                                        $is_pending = false;
-                                                        $fu_number = $index + 1;
-                                                    }
-                                                @endphp
-                                                @if($date)
-                                                    <div class="text-sm {{ $is_overdue ? 'text-red-600 font-semibold' : ($is_today ? 'text-green-600 font-semibold' : ($is_pending ? 'text-blue-600 font-semibold' : 'text-gray-900')) }}">
-                                                        FU ke-{{ $fu_number }}: {{ $date->format('d M Y') }}
-                                                        @if($is_overdue)
-                                                            <i class="fas fa-exclamation-triangle text-red-500 ml-1"></i>
-                                                        @elseif($is_today)
-                                                            <i class="fas fa-calendar-day text-green-500 ml-1"></i>
-                                                        @elseif($is_pending)
-                                                            <i class="fas fa-clock text-blue-500 ml-1"></i>
-                                                        @endif
-                                                    </div>
-                                                @else
-                                                    <div class="text-sm text-red-600">Invalid date for FU ke-{{ $fu_number }}</div>
-                                                @endif
-                                            @endif
-                                            @if($customer->{'fu_checkbox_' . ($index + 1)})
-                                                <span class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
-                                                    <i class="fas fa-check mr-1"></i>Completed FU ke-{{ $index + 1 }}
-                                                </span>
-                                            @endif
+                                            </div>
                                         @endforeach
                                     </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex space-x-2">
+                                    
+                                    <!-- Reports & Notes Button -->
+                                    <td class="px-4 py-4">
+                                        @php
+                                            $hasNotes = $customer->report || collect(range(2, 5))->some(fn($i) => $customer->{"fu_{$i}_note"});
+                                        @endphp
+                                        <button onclick="showNotesModal({{ $customer->id }})" 
+                                                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200 flex items-center {{ $hasNotes ? '' : 'opacity-50' }}">
+                                            <i class="fas fa-sticky-note mr-1"></i>
+                                            {{ $hasNotes ? 'View Notes' : 'No Notes' }}
+                                        </button>
+                                    </td>
+                                    
+                                    <!-- Actions -->
+                                    <td class="px-4 py-4">
+                                        <div class="flex flex-col space-y-2">
                                             @if($customer->phone)
                                                 <a href="{{ $customer->whatsapp_link }}" target="_blank"
-                                                   class="bg-teal-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-teal-600 transition-all duration-200 flex items-center">
+                                                class="bg-teal-500 text-white px-2 py-1 rounded text-xs font-medium hover:bg-teal-600 transition-all duration-200 flex items-center justify-center">
                                                     <i class="fab fa-whatsapp mr-1"></i>WA
                                                 </a>
                                             @endif
                                             <button onclick="openEditModal({{ $customer->id }})"
-                                                    class="btn-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center">
+                                                    class="btn-primary text-white px-2 py-1 rounded text-xs font-medium flex items-center justify-center">
                                                 <i class="fas fa-edit mr-1"></i>Edit
                                             </button>
                                             <form method="POST" action="{{ route('customer.archive', $customer->id) }}" class="inline">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit" onclick="return confirm('Yakin ingin mengarsipkan customer ini?')"
-                                                        class="btn-danger px-3 py-1.5 rounded-lg text-xs font-medium flex items-center">
+                                                        class="btn-danger px-2 py-1 rounded text-xs font-medium flex items-center justify-center w-full">
                                                     <i class="fas fa-archive mr-1"></i>Arsip
                                                 </button>
                                             </form>
@@ -631,7 +644,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                                         <i class="fas fa-users text-4xl mb-4 text-gray-300"></i>
                                         <p class="text-lg font-medium">Tidak ada data customer</p>
                                     </td>
@@ -675,6 +688,18 @@
                             </div>
                         </div>
                     @endif
+                    <!-- Notes Modal -->
+                    <div id="notesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+                            <button onclick="closeNotesModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Customer Notes</h3>
+                            <div id="notesContent" class="space-y-2 text-sm text-gray-700">
+                                <!-- Konten notes akan dimasukkan via JS -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -725,6 +750,52 @@
 </div>
 
 <script>
+    function showNotesModal(customerId) {
+        fetch(`/customers/${customerId}/notes`) // buat route baru untuk fetch data notes
+            .then(response => response.json())
+            .then(data => {
+                let content = "";
+
+                if (data.report) {
+                    content += `
+                        <div class="mb-2">
+                            <div class="text-xs text-gray-600 mb-1">Report:</div>
+                            <div class="text-xs text-gray-900 break-words">${data.report}</div>
+                        </div>
+                    `;
+                }
+
+                if (data.fu_notes && data.fu_notes.length > 0) {
+                    data.fu_notes.forEach((note, index) => {
+                        content += `
+                            <div class="mb-1">
+                                <div class="text-xs text-blue-600">FU-${index+2} Note:</div>
+                                <div class="text-xs text-gray-700 break-words">${note}</div>
+                            </div>
+                        `;
+                    });
+                }
+
+                if (!data.report && (!data.fu_notes || data.fu_notes.length === 0)) {
+                    content += `<div class="text-xs text-gray-500">No notes</div>`;
+                }
+
+                document.getElementById('notesContent').innerHTML = content;
+                document.getElementById('notesModal').classList.remove('hidden');
+                document.getElementById('notesModal').classList.add('flex');
+            })
+            .catch(err => {
+                document.getElementById('notesContent').innerHTML = `<div class="text-red-500 text-sm">Failed to load notes.</div>`;
+                document.getElementById('notesModal').classList.remove('hidden');
+                document.getElementById('notesModal').classList.add('flex');
+            });
+    }
+
+    function closeNotesModal() {
+        document.getElementById('notesModal').classList.add('hidden');
+        document.getElementById('notesModal').classList.remove('flex');
+    }
+
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         sidebar.classList.toggle('sidebar-hidden');

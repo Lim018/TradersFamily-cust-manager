@@ -34,6 +34,8 @@ Route::middleware('auth')->group(function () {
         ->name('customer.archive');
     Route::patch('/customer/{customer}/restore', [DashboardController::class, 'restoreCustomer'])
         ->name('customer.restore');
+
+    Route::get('/customers/{id}/notes', [App\Http\Controllers\DashboardController::class, 'getNotes']);
     
     // Admin only routes
     Route::middleware('admin')->group(function () {
