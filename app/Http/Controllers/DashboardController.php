@@ -126,6 +126,24 @@ class DashboardController extends Controller
     return view('dashboard.agent', compact('customers', 'stats'));
 }
 
+public function getNotes($id)
+{
+    $customer = Customer::findOrFail($id);
+
+    $fu_notes = [];
+    foreach (range(2, 5) as $i) {
+        $field = "fu_{$i}_note";
+        if ($customer->$field) {
+            $fu_notes[] = $customer->$field;
+        }
+    }
+
+    return response()->json([
+        'report' => $customer->report,
+        'fu_notes' => $fu_notes,
+    ]);
+}
+
 /**
  * Calculate follow-up today count from both JSON and individual fields
  */
@@ -287,23 +305,32 @@ private function calculateOverdueFollowup($customers)
     public function followupToday()
     {
         $user = Auth::user();
-        $today = Carbon::today()->format('Y-m-d'); // 2025-08-07
+        $today = Carbon::today()->format('Y-m-d'); // 2025-08-22
         
-        // Gunakan pattern yang work
+        // Query untuk mencari customers yang memiliki follow-up hari ini
         $query = Customer::active()
-            ->where('followup_date', 'LIKE', '%' . $today . '%');
+            ->where(function ($q) use ($today) {
+                // Cek fu_ke_1 (first follow-up)
+                $q->where('fu_ke_1', $today)
+                // Cek next_fu_2 sampai next_fu_5
+                ->orWhere('next_fu_2', $today)
+                ->orWhere('next_fu_3', $today)
+                ->orWhere('next_fu_4', $today)
+                ->orWhere('next_fu_5', $today);
+            });
         
         $stats = [
             'archived_count' => Customer::where('user_id', $user->id)->archived()->count()
         ];
         
+        // Jika user adalah agent, filter berdasarkan user_id
         if ($user->role === 'agent') {
             $query->where('user_id', $user->id);
         }
         
         $customers = $query->orderBy('created_at', 'desc')->get();
         
-        Log::info('Final customers found: ' . $customers->count());
+        Log::info('Final customers found for followup today: ' . $customers->count());
         
         return view('dashboard.followup-today', compact('customers', 'stats'));
     }

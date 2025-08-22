@@ -142,16 +142,6 @@
             border-color: #d1d5db;
         }
         
-        .customer-card.overdue::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: 4px;
-            background: #ef4444;
-        }
-        
         .customer-card.today::before {
             content: '';
             position: absolute;
@@ -347,8 +337,7 @@
                                 {{ $customers->count() }}
                             </p>
                             <p class="text-sm text-gray-500 mt-1">
-                                {{ $customers->where('is_overdue', true)->count() }} overdue, 
-                                {{ $customers->where('is_overdue', false)->count() }} on schedule
+                                Customer yang perlu di follow-up hari ini
                             </p>
                         </div>
                         <div class="p-4 bg-gradient-to-br from-[#2D5A27] to-cyan-500 rounded-xl ml-4">
@@ -361,38 +350,75 @@
                     <!-- Customer Cards -->
                     <div class="space-y-4">
                         @foreach($customers as $customer)
-                        <div class="customer-card {{ $customer->is_overdue ? 'overdue' : 'today' }} rounded-lg shadow-sm p-4 lg:p-6">
+                        @php
+                            // Tentukan follow-up date mana yang hari ini
+                            $today = \Carbon\Carbon::today()->format('Y-m-d');
+                            $followupType = '';
+                            $followupNumber = 0;
+                            
+                            if($customer->fu_ke_1 == $today) {
+                                $followupType = 'First Follow-up';
+                                $followupNumber = 1;
+                            } elseif($customer->next_fu_2 == $today) {
+                                $followupType = '2nd Follow-up';
+                                $followupNumber = 2;
+                            } elseif($customer->next_fu_3 == $today) {
+                                $followupType = '3rd Follow-up';
+                                $followupNumber = 3;
+                            } elseif($customer->next_fu_4 == $today) {
+                                $followupType = '4th Follow-up';
+                                $followupNumber = 4;
+                            } elseif($customer->next_fu_5 == $today) {
+                                $followupType = '5th Follow-up';
+                                $followupNumber = 5;
+                            }
+                            
+                            // Cek apakah sudah di-check
+                            $isCompleted = false;
+                            if($followupNumber >= 2) {
+                                $isCompleted = $customer->{"fu_{$followupNumber}_checked"};
+                            }
+                            
+                            // Generate WhatsApp link jika ada phone
+                            $whatsappLink = '';
+                            if($customer->phone) {
+                                $cleanPhone = preg_replace('/[^0-9]/', '', $customer->phone);
+                                if(substr($cleanPhone, 0, 1) == '0') {
+                                    $cleanPhone = '62' . substr($cleanPhone, 1);
+                                }
+                                $message = urlencode("Halo {$customer->nama}, ini dari Traders Family. Ada waktu untuk follow-up hari ini?");
+                                $whatsappLink = "https://wa.me/{$cleanPhone}?text={$message}";
+                            }
+                        @endphp
+                        
+                        <div class="customer-card today rounded-lg shadow-sm p-4 lg:p-6">
                             <div class="space-y-4">
                                 <!-- Customer Header -->
                                 <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
                                     <div class="flex-1">
                                         <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $customer->nama ?? 'No Name' }}</h3>
                                         <div class="flex flex-wrap items-center gap-2">
-                                            <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full {{ $customer->status_color }}">
-                                                {{ $customer->status_display }}
+                                            <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                {{ $followupType }}
                                             </span>
-                                            @if($customer->is_overdue)
-                                                <span class="inline-flex items-center px-3 py-1 text-xs bg-red-100 text-red-800 rounded-full">
-                                                    <i class="fas fa-exclamation-triangle mr-1"></i>Overdue
-                                                </span>
-                                            @else
-                                                <span class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full">
-                                                    <i class="fas fa-clock mr-1"></i>Today
-                                                </span>
-                                            @endif
-                                            @php
-                                                $isCompleted = $customer->activityLogs->firstWhere('description', 'Marked follow-up as completed');
-                                            @endphp
+                                            <span class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                                                <i class="fas fa-clock mr-1"></i>Today
+                                            </span>
                                             @if($isCompleted)
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                     <i class="fas fa-check mr-1"></i>Completed
                                                 </span>
                                             @endif
+                                            @if($customer->status_fu)
+                                                <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                    {{ $customer->status_fu }}
+                                                </span>
+                                            @endif
                                         </div>
                                     </div>
                                     <div class="text-left sm:text-right text-sm text-gray-500">
-                                        <p class="font-medium">{{ $customer->today_followup_date ? $customer->today_followup_date->format('d M Y') : 'Today' }}</p>
-                                        <p class="text-xs">Follow-up scheduled</p>
+                                        <p class="font-medium">{{ \Carbon\Carbon::today()->format('d M Y') }}</p>
+                                        <p class="text-xs">Follow-up #{{ $followupNumber }}</p>
                                     </div>
                                 </div>
 
@@ -435,13 +461,13 @@
                                 </div>
 
                                 <!-- Notes -->
-                                @if($customer->notes)
+                                @if($followupNumber >= 2 && $customer->{"fu_{$followupNumber}_note"})
                                     <div class="bg-gradient-to-r from-gray-50 to-gray-50 border border-gray-100 p-4 rounded-lg">
                                         <div class="flex items-start">
                                             <i class="fas fa-sticky-note mr-2 text-gray-400 mt-0.5 flex-shrink-0"></i>
                                             <div class="min-w-0 flex-1">
-                                                <p class="text-sm font-medium text-gray-700 mb-1">Notes:</p>
-                                                <p class="text-sm text-gray-600 break-words">{{ $customer->notes }}</p>
+                                                <p class="text-sm font-medium text-gray-700 mb-1">Follow-up Notes:</p>
+                                                <p class="text-sm text-gray-600 break-words">{{ $customer->{"fu_{$followupNumber}_note"} }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -449,24 +475,24 @@
 
                                 <!-- Action Buttons -->
                                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                                    @if($customer->phone)
-                                        <a href="{{ $customer->whatsapp_link }}" target="_blank"
+                                    @if($whatsappLink)
+                                        <a href="{{ $whatsappLink }}" target="_blank"
                                            class="btn-success text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center">
                                             <i class="fab fa-whatsapp mr-2"></i>WhatsApp
                                         </a>
                                     @endif
                                     
-                                    <button onclick="openQuickUpdate({{ $customer->id }})"
+                                    <button onclick="openQuickUpdate({{ $customer->id }}, {{ $followupNumber }})"
                                             class="btn-neutral text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center">
                                         <i class="fas fa-edit mr-2"></i>Quick Update
                                     </button>
                                     
-                                    @if(!$isCompleted)
-                                        <form method="POST" action="{{ route('customer.mark-completed', $customer->id) }}">
+                                    @if(!$isCompleted && $followupNumber >= 2)
+                                        <form method="POST" action="{{ route('customer.mark-fu-completed', [$customer->id, $followupNumber]) }}">
                                             @csrf
                                             @method('PATCH')
                                             <button type="submit"
-                                                    class="btn-neutral text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center">
+                                                    class="btn-success text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center">
                                                 <i class="fas fa-check mr-2"></i>Mark Completed
                                             </button>
                                         </form>
@@ -507,6 +533,8 @@
                     @csrf
                     @method('PATCH')
                     
+                    <input type="hidden" id="followupNumber" name="followup_number" value="">
+                    
                     <div class="mb-5">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Follow-up Notes</label>
                         <textarea name="notes" id="quickNotes" rows="4"
@@ -516,16 +544,16 @@
                     
                     <div class="mb-5">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Next Follow-up Date</label>
-                        <input type="date" name="followup_date" id="quickFollowupDate"
+                        <input type="date" name="next_followup_date" id="quickFollowupDate"
                                min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
                                class="form-input w-full px-4 py-3 rounded-lg">
                     </div>
                     
                     <div class="mb-6">
                         <label class="flex items-center">
-                            <input type="checkbox" name="fu_checkbox" id="quickFuCheckbox" 
+                            <input type="checkbox" name="mark_completed" id="quickFuCheckbox" 
                                    class="mr-3 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
-                            <span class="text-sm font-medium text-gray-700">Mark as completed</span>
+                            <span class="text-sm font-medium text-gray-700">Mark this follow-up as completed</span>
                         </label>
                     </div>
                     
@@ -534,7 +562,7 @@
                                 class="btn-neutral text-white px-6 py-2.5 rounded-lg">
                             Cancel
                         </button>
-                        <button type="submit" class="btn-neutral text-white px-6 py-2.5 rounded-lg">
+                        <button type="submit" class="btn-success text-white px-6 py-2.5 rounded-lg">
                             Update Customer
                         </button>
                     </div>
@@ -551,12 +579,17 @@
 
         const customers = @json($customers);
         
-        function openQuickUpdate(customerId) {
+        function openQuickUpdate(customerId, followupNumber) {
             const customer = customers.find(c => c.id === customerId);
             if (!customer) return;
             
-            document.getElementById('quickUpdateForm').action = `/dashboard/customer/${customerId}`;
-            document.getElementById('quickNotes').value = customer.notes || '';
+            document.getElementById('quickUpdateForm').action = `/dashboard/customer/${customerId}/followup-update`;
+            document.getElementById('followupNumber').value = followupNumber;
+            
+            // Set existing notes jika ada
+            const existingNotes = followupNumber >= 2 ? customer[`fu_${followupNumber}_note`] : '';
+            document.getElementById('quickNotes').value = existingNotes || '';
+            
             document.getElementById('quickFollowupDate').value = '';
             document.getElementById('quickFuCheckbox').checked = false;
             
@@ -588,7 +621,7 @@
                     toast.style.animation = 'slideInRight 0.4s ease-out reverse';
                     setTimeout(() => toast.remove(), 400);
                 }
-            }, 3000);
+            }, 400);
         </script>
     @endif
 </body>
