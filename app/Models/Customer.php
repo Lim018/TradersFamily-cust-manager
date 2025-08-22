@@ -25,19 +25,17 @@ class Customer extends Model
         'report',
         'alasan_depo_decline',
         'fu_jumlah',
-        'fu_1_date',
-        'fu_1_checked',
-        'fu_1_note',
-        'fu_2_date',
+        'fu_ke_1',
+        'next_fu_2',
         'fu_2_checked',
         'fu_2_note',
-        'fu_3_date',
+        'next_fu_3',
         'fu_3_checked',
         'fu_3_note',
-        'fu_4_date',
+        'next_fu_4',
         'fu_4_checked',
         'fu_4_note',
-        'fu_5_date',
+        'next_fu_5',
         'fu_5_checked',
         'fu_5_note',
         // 'sheet_month',
@@ -173,15 +171,37 @@ class Customer extends Model
     }
 
     // Archive customer
-    public function archive($userId)
+    // Model Customer.php
+public function archive($userId, $archiveType = 'keep')
+{
+    $this->update([
+        'archived_at' => now(),
+        'archived_by' => $userId,
+        'archive_type' => $archiveType
+    ]);
+}
+
+    public function moveToMaintain($userId)
     {
         $this->update([
-            'is_archived' => true,
-            'archived_at' => now(),
-            'archived_by' => $userId
+            'archive_type' => 'maintain',
+            'archived_by' => $userId,
+            'archived_at' => now()
         ]);
     }
 
+    // Scope untuk filter berdasarkan archive_type
+    public function scopeKeepArchived($query)
+    {
+        return $query->whereNotNull('archived_at')
+                    ->where('archive_type', 'keep');
+    }
+
+    public function scopeMaintainArchived($query)
+    {
+        return $query->whereNotNull('archived_at')
+                    ->where('archive_type', 'maintain');
+    }
     // Restore customer from archive
     public function restore()
     {

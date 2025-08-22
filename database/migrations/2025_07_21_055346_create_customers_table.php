@@ -27,9 +27,11 @@ return new class extends Migration
             $table->string('report')->nullable();
             $table->string('alasan_depo_decline')->nullable();
             $table->integer('fu_jumlah')->default(0);
+            $table->date('fu_ke_1')->nullable();
 
-            for ($i = 1; $i <= 5; $i++) {
-                $table->date("fu_{$i}_date")->nullable();
+
+            for ($i = 2; $i <= 5; $i++) {
+                $table->date("next_fu_{$i}")->nullable();
                 $table->boolean("fu_{$i}_checked")->default(false);
                 $table->string("fu_{$i}_note", 255)->nullable();
             }
