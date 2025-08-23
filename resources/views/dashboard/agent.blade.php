@@ -65,6 +65,66 @@
             color: white;
             box-shadow: 0 2px 8px rgba(45, 90, 39, 0.2);
         }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+        }
+
+        .dropdown.open .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: #374151;
+            text-decoration: none;
+            font-medium;
+            transition: all 0.2s ease;
+            border-radius: 6px;
+            margin: 4px;
+        }
+
+        .dropdown-menu a:hover {
+            background: #f3f4f6;
+            color: #2D5A27;
+            transform: translateX(2px);
+        }
+
+        .dropdown-toggle {
+            transition: all 0.2s ease;
+        }
+
+        .dropdown.open .dropdown-toggle {
+            background: #f8fafc;
+        }
+
+        .dropdown-arrow {
+            transition: transform 0.2s ease;
+        }
+
+        .dropdown.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
         
         .btn-primary {
             background: #4B5563;
@@ -349,14 +409,29 @@
                 <a href="{{ route('followup.today') }}" class="sidebar-link flex items-center px-4 py-3 text-gray-700 font-medium">
                     <i class="fas fa-calendar-check mr-3"></i>
                     Follow-up Hari Ini
-                    @if($stats['followup_today'] > 0)
+                    {{-- @if($stats['followup_today'] > 0)
                         <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">{{ $stats['followup_today'] }}</span>
-                    @endif
+                    @endif --}}
                 </a>
-                {{-- <a href="{{ route('dashboard.archived') }}" class="sidebar-link flex items-center px-4 py-3 text-gray-700 font-medium">
-                    <i class="fas fa-archive mr-3"></i>
-                    Investor
-                </a> --}}
+                
+                <!-- Investor Dropdown -->
+                <div class="dropdown">
+                    <button class="sidebar-link dropdown-toggle flex items-center px-4 py-3 text-gray-700 font-medium w-full text-left" onclick="toggleDropdown(this)">
+                        <i class="fas fa-archive mr-3"></i>
+                        Investor
+                        <i class="fas fa-chevron-down ml-auto dropdown-arrow"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="{{ route('dashboard.archived_maintain') }}">
+                            <i class="fas fa-cog mr-3 text-blue-600"></i>
+                            Maintain
+                        </a>
+                        <a href="{{ route('dashboard.archived_keep') }}">
+                            <i class="fas fa-handshake mr-3 text-green-600"></i>
+                            Closing
+                        </a>
+                    </div>
+                </div>
             </nav>
             
             <!-- Logout -->
@@ -746,6 +821,30 @@
 </div>
 
 <script>
+    function toggleDropdown(button) {
+        const dropdown = button.parentElement;
+        const isOpen = dropdown.classList.contains('open');
+        
+        // Close all other dropdowns
+        document.querySelectorAll('.dropdown.open').forEach(d => {
+            if (d !== dropdown) {
+                d.classList.remove('open');
+            }
+        });
+        
+        // Toggle current dropdown
+        dropdown.classList.toggle('open', !isOpen);
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.dropdown')) {
+            document.querySelectorAll('.dropdown.open').forEach(dropdown => {
+                dropdown.classList.remove('open');
+            });
+        }
+    });
+
     function showNotesModal(customerId) {
         fetch(`/customers/${customerId}/notes`) // buat route baru untuk fetch data notes
             .then(response => response.json())

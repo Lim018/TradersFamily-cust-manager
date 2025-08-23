@@ -27,7 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/archived/keep', [DashboardController::class, 'archiveKeep'])->name('dashboard.archived_keep');
     Route::get('/dashboard/archived/maintain', [DashboardController::class, 'archiveMaintain'])->name('dashboard.archived_maintain');
     Route::post('/customer/{customer}/archive', [DashboardController::class, 'archiveCustomer'])->name('customer.archive');
-    Route::patch('/customer/{customer}/restore', [DashboardControlle::class, 'restoreCustomer'])->name('customer.restore');
+    Route::patch('/customer/{customer}/restore', [DashboardController::class, 'restoreCustomer'])->name('customer.restore');
 
     // Customer management routes
     Route::patch('/dashboard/customer/{customer}', [DashboardController::class, 'updateCustomer'])
