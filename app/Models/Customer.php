@@ -167,8 +167,6 @@ class Customer extends Model
         return null;
     }
 
-    // Archive customer
-    // Model Customer.php
 public function archive($userId, $archiveType = 'keep')
 {
     $this->update([
