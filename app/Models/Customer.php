@@ -104,19 +104,19 @@ class Customer extends Model
             'hot(closeable)' => 'Hot (Closeable)'
         ];
 
-        return $statusMap[$this->status_fu] ?? $this->status_fu;
+        return $statusMap[$this->status_fu] ?? ($this->status_fu ?: 'No Status');
     }
 
-    // Accessor untuk status badge color
+    // Accessor untuk status badge color - UPDATED COLORS
     public function getStatusColorAttribute()
     {
         $colorMap = [
-            'normal' => 'bg-gray-100 text-gray-800',
+            'normal' => 'bg-green-100 text-green-800',
             'warm' => 'bg-yellow-100 text-yellow-800',
             'hot' => 'bg-red-100 text-red-800',
-            'normal(prospect)' => 'bg-blue-100 text-blue-800',
-            'warm(potential)' => 'bg-orange-100 text-orange-800',
-            'hot(closeable)' => 'bg-green-100 text-green-800'
+            'normal(prospect)' => 'bg-green-100 text-green-800',
+            'warm(potential)' => 'bg-yellow-100 text-yellow-800',
+            'hot(closeable)' => 'bg-red-100 text-red-800'
         ];
 
         return $colorMap[$this->status_fu] ?? 'bg-gray-100 text-gray-800';
