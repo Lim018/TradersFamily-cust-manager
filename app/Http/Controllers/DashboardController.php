@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Customer;
 use App\Models\ActivityLog;
+use App\Models\Maintain;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -456,46 +457,148 @@ private function calculateOverdueFollowup($customers)
         return back()->with('success', 'Follow-up marked as completed');
     }
 
-    public function archiveCustomer(Customer $customer)
+    // public function archiveCustomer(Customer $customer)
+    // {
+    //     $user = Auth::user();
+        
+    //     // Pastikan agent hanya bisa archive customer miliknya
+    //     if ($user->role === 'agent' && $customer->user_id !== $user->id) {
+    //         abort(403);
+    //     }
+        
+    //     $oldData = $customer->toArray();
+        
+    //     $customer->archive($user->id);
+        
+    //     // Log aktivitas
+    //     ActivityLog::create([
+    //         'user_id' => $user->id,
+    //         'customer_id' => $customer->id,
+    //         'action' => 'archived',
+    //         'description' => 'Customer moved to archive',
+    //         'old_data' => $oldData,
+    //         'new_data' => $customer->fresh()->toArray()
+    //     ]);
+        
+    //     return back()->with('success', 'Customer has been archived');
+    // }
+
+    // public function restoreCustomer(Customer $customer)
+    // {
+    //     $user = Auth::user();
+        
+    //     // Pastikan agent hanya bisa restore customer miliknya
+    //     if ($user->role === 'agent' && $customer->user_id !== $user->id) {
+    //         abort(403);
+    //     }
+        
+    //     $oldData = $customer->toArray();
+        
+    //     $customer->restore();
+        
+    //     // Log aktivitas
+    //     ActivityLog::create([
+    //         'user_id' => $user->id,
+    //         'customer_id' => $customer->id,
+    //         'action' => 'restored',
+    //         'description' => 'Customer restored from archive',
+    //         'old_data' => $oldData,
+    //         'new_data' => $customer->fresh()->toArray()
+    //     ]);
+        
+    //     return back()->with('success', 'Customer has been restored');
+    // }
+    public function archiveKeep(Request $request)
     {
-        $user = Auth::user();
-        
-        // Pastikan agent hanya bisa archive customer miliknya
-        if ($user->role === 'agent' && $customer->user_id !== $user->id) {
-            abort(403);
-        }
-        
-        $oldData = $customer->toArray();
-        
-        $customer->archive($user->id);
-        
-        // Log aktivitas
-        ActivityLog::create([
-            'user_id' => $user->id,
-            'customer_id' => $customer->id,
-            'action' => 'archived',
-            'description' => 'Customer moved to archive',
-            'old_data' => $oldData,
-            'new_data' => $customer->fresh()->toArray()
-        ]);
-        
-        return back()->with('success', 'Customer has been archived');
+        $search = $request->query('search');
+        $keepQuery = Customer::where('is_archived', true)
+            ->when($search, function ($query, $search) {
+                return $query->where('nama', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
+            });
+        $keep = $keepQuery->paginate(10);
+
+        $stats = ['followup_today' => Customer::whereNotNull('next_fu_2')->count()];
+
+        return view('dashboard.archive_keep', compact('keep', 'stats'));
     }
+
+    public function archiveMaintain(Request $request)
+    {
+        $search = $request->query('search');
+        $maintainQuery = Maintain::when($search, function ($query, $search) {
+            return $query->where('nama', 'like', "%{$search}%")
+                        ->orWhere('agent_code', 'like', "%{$search}%");
+        });
+        
+        $maintain = $maintainQuery->paginate(10);
+
+         $stats = [
+        'followup_today' => Customer::where('is_archived', true)
+            ->whereNotNull('next_fu_2')
+            ->count()
+    ];
+
+    return view('dashboard.archive_maintain', compact('maintain', 'stats'));
+    }
+
+    public function archiveCustomer(Customer $customer)
+{
+    $user = Auth::user();
+    if (!$user) {
+        return response()->json(['error' => 'Unauthorized'], 401);
+    }
+
+    if ($user->role === 'agent' && $customer->user_id !== $user->id) {
+        return response()->json(['error' => 'Forbidden'], 403);
+    }
+
+    // Kalau sudah diarsip, stop
+    if ($customer->is_archived) {
+        return back()->with('error', 'Customer is already archived');
+    }
+
+    // Arsipkan (ubah jadi 1)
+    $customer->update(['is_archived' => 1]);
+
+    // Log aktivitas
+    ActivityLog::create([
+        'user_id'     => $user->id,
+        'customer_id' => $customer->id,
+        'action'      => 'archived',
+        'description' => 'Customer moved to archive',
+        'old_data'    => $customer->getOriginal(),
+        'new_data'    => $customer->toArray()
+    ]);
+
+    // Setelah berhasil → pindahkan user ke halaman archive_maintain
+   return back()->with('success', 'Customer has been archived');
+}
+
 
     public function restoreCustomer(Customer $customer)
     {
         $user = Auth::user();
-        
-        // Pastikan agent hanya bisa restore customer miliknya
-        if ($user->role === 'agent' && $customer->user_id !== $user->id) {
-            abort(403);
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
-        
+
+        if ($user->role === 'agent' && $customer->user_id !== $user->id) {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
+
+        if (!$customer->is_archived) {
+            return back()->with('error', 'Customer is not archived');
+        }
+
         $oldData = $customer->toArray();
-        
-        $customer->restore();
-        
-        // Log aktivitas
+        $customer->update([
+            'is_archived' => false,
+            'archived_at' => null,
+            'archived_by' => null
+        ]);
+
         ActivityLog::create([
             'user_id' => $user->id,
             'customer_id' => $customer->id,
@@ -504,7 +607,11 @@ private function calculateOverdueFollowup($customers)
             'old_data' => $oldData,
             'new_data' => $customer->fresh()->toArray()
         ]);
-        
+
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Customer has been restored']);
+        }
+
         return back()->with('success', 'Customer has been restored');
     }
 }
