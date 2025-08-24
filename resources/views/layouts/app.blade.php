@@ -511,13 +511,52 @@
                 </a>
                 
                 <a href="{{ route('followup.today') }}" 
-                   class="sidebar-link flex items-center px-4 py-3 font-medium {{ request()->routeIs('followup.today') ? 'active text-white' : 'text-gray-700' }}">
-                    <i class="fas fa-calendar-check mr-3"></i>
-                    Follow-up Hari Ini
-                    @if(isset($stats) && isset($stats['followup_today']) && $stats['followup_today'] > 0)
-                        <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">{{ $stats['followup_today'] }}</span>
-                    @endif
-                </a>
+       class="sidebar-link flex items-center px-4 py-3 font-medium {{ request()->routeIs('followup.today') ? 'active text-white' : 'text-gray-700' }}">
+        <i class="fas fa-calendar-check mr-3"></i>
+        Follow-up Hari Ini
+        @php
+            // Hitung follow-up pending hari ini
+            $today = \Carbon\Carbon::today()->format('Y-m-d');
+            $pendingCount = 0;
+            
+            if (Auth::user()->role === 'agent') {
+                // Get all active customers for this agent
+                $activeCustomers = \App\Models\Customer::where('user_id', Auth::id())
+                    ->active()
+                    ->get();
+                    
+                // Count pending follow-ups for today
+                foreach ($activeCustomers as $customer) {
+                    $hasPendingFollowupToday = false;
+                    
+                    // Check fu_ke_1 (always pending if today)
+                    if ($customer->fu_ke_1 == $today) {
+                        $hasPendingFollowupToday = true;
+                    }
+                    
+                    // Check next_fu_2 to next_fu_5 (only if not completed)
+                    if (!$hasPendingFollowupToday) {
+                        for ($i = 2; $i <= 5; $i++) {
+                            $fuField = "next_fu_{$i}";
+                            $checkedField = "fu_{$i}_checked";
+                            
+                            if ($customer->$fuField == $today && !$customer->$checkedField) {
+                                $hasPendingFollowupToday = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if ($hasPendingFollowupToday) {
+                        $pendingCount++;
+                    }
+                }
+            }
+        @endphp
+        @if($pendingCount > 0)
+            <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">{{ $pendingCount }}</span>
+        @endif
+    </a>
                 
                 <!-- Investor Dropdown -->
                 <div class="dropdown {{ request()->routeIs(['dashboard.archived_maintain', 'dashboard.archived_keep']) ? 'open' : '' }}">

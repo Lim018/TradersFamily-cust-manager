@@ -11,19 +11,49 @@
 
 @section('content')
 <!-- Summary Card -->
-<div class="summary-card p-4 lg:p-6 rounded-lg shadow-sm mb-6">
-    <div class="flex items-center justify-between">
-        <div class="flex-1">
-            <h3 class="text-lg font-semibold text-gray-900 mb-1">Total Follow-up Hari Ini</h3>
-            <p class="text-3xl font-bold bg-gradient-to-r from-[#2D5A27] to-cyan-600 bg-clip-text text-transparent">
-                {{ $customers->count() }}
-            </p>
-            <p class="text-sm text-gray-500 mt-1">
-                Customer yang perlu di follow-up hari ini
-            </p>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <!-- Total Follow-ups -->
+    <div class="summary-card p-4 lg:p-6 rounded-lg shadow-sm">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <h3 class="text-sm font-medium text-gray-500 mb-1">Total Follow-up</h3>
+                <p class="text-2xl font-bold text-gray-900">
+                    {{ $customers->count() }}
+                </p>
+            </div>
+            <div class="p-3 bg-blue-100 rounded-lg">
+                <i class="fas fa-calendar-alt text-blue-600 text-lg"></i>
+            </div>
         </div>
-        <div class="p-4 bg-gradient-to-br from-[#2D5A27] to-cyan-500 rounded-xl ml-4">
-            <i class="fas fa-calendar-check text-white text-2xl"></i>
+    </div>
+
+    <!-- Pending Follow-ups -->
+    <div class="summary-card p-4 lg:p-6 rounded-lg shadow-sm">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <h3 class="text-sm font-medium text-gray-500 mb-1">Pending</h3>
+                <p class="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                    {{ $stats['pending_followups'] ?? 0 }}
+                </p>
+            </div>
+            <div class="p-3 bg-orange-100 rounded-lg">
+                <i class="fas fa-clock text-orange-600 text-lg"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completed Follow-ups -->
+    <div class="summary-card p-4 lg:p-6 rounded-lg shadow-sm">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <h3 class="text-sm font-medium text-gray-500 mb-1">Completed</h3>
+                <p class="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                    {{ $stats['completed_followups'] ?? 0 }}
+                </p>
+            </div>
+            <div class="p-3 bg-green-100 rounded-lg">
+                <i class="fas fa-check-circle text-green-600 text-lg"></i>
+            </div>
         </div>
     </div>
 </div>
@@ -37,28 +67,34 @@
             $today = \Carbon\Carbon::today()->format('Y-m-d');
             $followupType = '';
             $followupNumber = 0;
+            $isCompleted = false;
+            $isPending = false;
             
             if($customer->fu_ke_1 == $today) {
                 $followupType = 'First Follow-up';
                 $followupNumber = 1;
+                $isCompleted = false; // First FU doesn't have completion status
+                $isPending = true; // First FU is always pending
             } elseif($customer->next_fu_2 == $today) {
                 $followupType = '2nd Follow-up';
                 $followupNumber = 2;
+                $isCompleted = $customer->fu_2_checked;
+                $isPending = !$customer->fu_2_checked;
             } elseif($customer->next_fu_3 == $today) {
                 $followupType = '3rd Follow-up';
                 $followupNumber = 3;
+                $isCompleted = $customer->fu_3_checked;
+                $isPending = !$customer->fu_3_checked;
             } elseif($customer->next_fu_4 == $today) {
                 $followupType = '4th Follow-up';
                 $followupNumber = 4;
+                $isCompleted = $customer->fu_4_checked;
+                $isPending = !$customer->fu_4_checked;
             } elseif($customer->next_fu_5 == $today) {
                 $followupType = '5th Follow-up';
                 $followupNumber = 5;
-            }
-            
-            // Cek apakah sudah di-check
-            $isCompleted = false;
-            if($followupNumber >= 2) {
-                $isCompleted = $customer->{"fu_{$followupNumber}_checked"};
+                $isCompleted = $customer->fu_5_checked;
+                $isPending = !$customer->fu_5_checked;
             }
             
             // Generate WhatsApp link jika ada phone
@@ -73,14 +109,19 @@
             }
         @endphp
         
-        <div class="customer-card today rounded-lg shadow-sm p-4 lg:p-6">
+        <div class="customer-card today rounded-lg shadow-sm p-4 lg:p-6 {{ $isCompleted ? 'opacity-75 bg-gray-50 border-l-4 border-green-500' : 'border-l-4 border-orange-500' }}">
             <div class="space-y-4">
                 <!-- Customer Header -->
                 <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
                     <div class="flex-1">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $customer->nama ?? 'No Name' }}</h3>
+                        <div class="flex items-center gap-3 mb-2">
+                            <h3 class="text-lg font-semibold text-gray-900">{{ $customer->nama ?? 'No Name' }}</h3>
+                            @if($isPending)
+                                <div class="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                            @endif
+                        </div>
                         <div class="flex flex-wrap items-center gap-2">
-                            <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                            <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full {{ $followupNumber == 1 ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
                                 {{ $followupType }}
                             </span>
                             <span class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full">
@@ -89,6 +130,10 @@
                             @if($isCompleted)
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                     <i class="fas fa-check mr-1"></i>Completed
+                                </span>
+                            @elseif($isPending)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 animate-pulse">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>Pending
                                 </span>
                             @endif
                             @if($customer->status_fu)
@@ -101,6 +146,9 @@
                     <div class="text-left sm:text-right text-sm text-gray-500">
                         <p class="font-medium">{{ \Carbon\Carbon::today()->format('d M Y') }}</p>
                         <p class="text-xs">Follow-up #{{ $followupNumber }}</p>
+                        @if($isCompleted)
+                            <p class="text-xs text-green-600 font-medium">✓ Completed</p>
+                        @endif
                     </div>
                 </div>
 
@@ -148,7 +196,7 @@
                         <div class="flex items-start">
                             <i class="fas fa-sticky-note mr-2 text-gray-400 mt-0.5 flex-shrink-0"></i>
                             <div class="min-w-0 flex-1">
-                                <p class="text-sm font-medium text-gray-700 mb-1">Follow-up Notes:</p>
+                                <p class="text-sm font-medium text-gray-700 mb-1">Previous Follow-up Notes:</p>
                                 <p class="text-sm text-gray-600 break-words">{{ $customer->{"fu_{$followupNumber}_note"} }}</p>
                             </div>
                         </div>
@@ -164,20 +212,29 @@
                         </a>
                     @endif
                     
-                    <button onclick="openQuickUpdate({{ $customer->id }}, {{ $followupNumber }})"
+                    {{-- <button onclick="openQuickUpdate({{ $customer->id }}, {{ $followupNumber }})"
                             class="btn-neutral text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center">
                         <i class="fas fa-edit mr-2"></i>Quick Update
-                    </button>
+                    </button> --}}
                     
                     @if(!$isCompleted && $followupNumber >= 2)
-                        <form method="POST" action="{{ route('customer.mark-fu-completed', [$customer->id, $followupNumber]) }}">
+                        <form method="POST" action="{{ route('customer.mark-fu-completed', [$customer->id, $followupNumber]) }}" class="inline">
                             @csrf
                             @method('PATCH')
                             <button type="submit"
-                                    class="btn-success text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center">
+                                    class="btn-success text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center w-full sm:w-auto hover:bg-green-600 transition-all duration-200"
+                                    onclick="return confirm('Mark this follow-up as completed?')">
                                 <i class="fas fa-check mr-2"></i>Mark Completed
                             </button>
                         </form>
+                    @elseif($isCompleted && $followupNumber >= 2)
+                        <div class="flex items-center px-4 py-2.5 bg-green-100 text-green-800 rounded-lg text-sm font-medium">
+                            <i class="fas fa-check-circle mr-2"></i>Follow-up Completed
+                        </div>
+                    @elseif($followupNumber == 1)
+                        <div class="flex items-center px-4 py-2.5 bg-blue-100 text-blue-800 rounded-lg text-sm font-medium">
+                            <i class="fas fa-info-circle mr-2"></i>First Follow-up (No completion required)
+                        </div>
                     @endif
                 </div>
             </div>
@@ -228,7 +285,7 @@
                            class="form-input w-full px-4 py-3 rounded-lg">
                 </div>
                 
-                <div class="mb-6">
+                <div class="mb-6" id="markCompletedContainer">
                     <label class="flex items-center">
                         <input type="checkbox" name="mark_completed" id="quickFuCheckbox" 
                                class="mr-3 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
@@ -266,6 +323,14 @@
         const existingNotes = followupNumber >= 2 ? customer[`fu_${followupNumber}_note`] : '';
         document.getElementById('quickNotes').value = existingNotes || '';
         
+        // Hide mark completed checkbox for first follow-up
+        const markCompletedContainer = document.getElementById('markCompletedContainer');
+        if (followupNumber === 1) {
+            markCompletedContainer.style.display = 'none';
+        } else {
+            markCompletedContainer.style.display = 'block';
+        }
+        
         document.getElementById('quickFollowupDate').value = '';
         document.getElementById('quickFuCheckbox').checked = false;
         
@@ -281,5 +346,10 @@
             closeQuickUpdate();
         }
     });
+
+    // Auto refresh page every 5 minutes to update pending counts
+    setInterval(function() {
+        window.location.reload();
+    }, 300000); // 5 minutes
 </script>
 @endpush
