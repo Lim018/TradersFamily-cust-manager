@@ -44,12 +44,10 @@ class Customer extends Model
     ];
 
     protected $casts = [
-        'fu_checkbox_1' => 'boolean',
-        'fu_checkbox_2' => 'boolean',
-        'fu_checkbox_3' => 'boolean',
-        'fu_checkbox_4' => 'boolean',
-        'fu_checkbox_5' => 'boolean',
-        // 'followup_date' => 'array',
+        'fu_2_checked' => 'boolean',
+        'fu_3_checked' => 'boolean',
+        'fu_4_checked' => 'boolean',
+        'fu_5_checked' => 'boolean',
         'is_archived' => 'boolean',
         'archived_at' => 'datetime',
         'created_at' => 'datetime',
@@ -71,7 +69,112 @@ class Customer extends Model
         return $this->belongsTo(User::class, 'archived_by');
     }
 
-    // Accessor untuk WhatsApp link
+    // Check if customer has follow-up today
+    public function hasFollowupToday()
+    {
+        $today = Carbon::today()->format('Y-m-d');
+        
+        return $this->fu_ke_1 == $today ||
+               $this->next_fu_2 == $today ||
+               $this->next_fu_3 == $today ||
+               $this->next_fu_4 == $today ||
+               $this->next_fu_5 == $today;
+    }
+
+    // Check if customer has pending follow-up today (not completed)
+    public function hasPendingFollowupToday()
+    {
+        $today = Carbon::today()->format('Y-m-d');
+        
+        // First follow-up is always pending if today
+        if ($this->fu_ke_1 == $today) {
+            return true;
+        }
+        
+        // Check other follow-ups (only pending if not completed)
+        for ($i = 2; $i <= 5; $i++) {
+            $fuField = "next_fu_{$i}";
+            $checkedField = "fu_{$i}_checked";
+            
+            if ($this->$fuField == $today && !$this->$checkedField) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    // Check if customer has completed follow-up today
+    public function hasCompletedFollowupToday()
+    {
+        $today = Carbon::today()->format('Y-m-d');
+        
+        // Check follow-ups 2-5 that are scheduled today and completed
+        for ($i = 2; $i <= 5; $i++) {
+            $fuField = "next_fu_{$i}";
+            $checkedField = "fu_{$i}_checked";
+            
+            if ($this->$fuField == $today && $this->$checkedField) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    // Get today's follow-up details
+    public function getTodayFollowupDetails()
+    {
+        $today = Carbon::today()->format('Y-m-d');
+        
+        if ($this->fu_ke_1 == $today) {
+            return [
+                'type' => 'First Follow-up',
+                'number' => 1,
+                'is_completed' => false, // First FU doesn't have checkbox
+                'date' => $this->fu_ke_1,
+                'note' => null
+            ];
+        }
+        
+        for ($i = 2; $i <= 5; $i++) {
+            if ($this->{"next_fu_{$i}"} == $today) {
+                return [
+                    'type' => $this->getFollowupTypeText($i),
+                    'number' => $i,
+                    'is_completed' => $this->{"fu_{$i}_checked"} ?? false,
+                    'date' => $this->{"next_fu_{$i}"},
+                    'note' => $this->{"fu_{$i}_note"}
+                ];
+            }
+        }
+        
+        return null;
+    }
+
+    private function getFollowupTypeText($number)
+    {
+        $types = [
+            2 => '2nd Follow-up',
+            3 => '3rd Follow-up', 
+            4 => '4th Follow-up',
+            5 => '5th Follow-up'
+        ];
+        
+        return $types[$number] ?? "{$number}th Follow-up";
+    }
+
+    // Mark specific follow-up as completed
+    public function markFollowupCompleted($followupNumber)
+    {
+        if ($followupNumber >= 2 && $followupNumber <= 5) {
+            $this->update([
+                "fu_{$followupNumber}_checked" => true
+            ]);
+        }
+    }
+
+    // Get WhatsApp link
     public function getWhatsappLinkAttribute()
     {
         if (!$this->phone) {
@@ -87,12 +190,12 @@ class Customer extends Model
             $phone = '62' . $phone;
         }
         
-        $message = "Halo {$this->nama}, saya dari tim sales ingin melakukan follow up terkait interest Anda.";
+        $message = "Halo {$this->nama}, ini dari Traders Family. Ada waktu untuk follow-up hari ini?";
         
         return "https://wa.me/{$phone}?text=" . urlencode($message);
     }
 
-    // Accessor untuk status display
+    // Get status display
     public function getStatusDisplayAttribute()
     {
         $statusMap = [
@@ -107,7 +210,7 @@ class Customer extends Model
         return $statusMap[$this->status_fu] ?? ($this->status_fu ?: 'No Status');
     }
 
-    // Accessor untuk status badge color - UPDATED COLORS
+    // Get status badge color
     public function getStatusColorAttribute()
     {
         $colorMap = [
@@ -122,59 +225,15 @@ class Customer extends Model
         return $colorMap[$this->status_fu] ?? 'bg-gray-100 text-gray-800';
     }
 
-    // Check if follow up is overdue
-    // public function getIsOverdueAttribute()
-    // {
-    //     return $this->followup_date && $this->followup_date->isPast() && !$this->fu_checkbox;
-    // }
-
-        public function getIsOverdueAttribute()
+    // Archive methods
+    public function archive($userId, $archiveType = 'keep')
     {
-        if (!$this->followup_date) return false;
-        
-        $today = Carbon::today()->format('Y-m-d');
-        $dates = json_decode($this->followup_date, true);
-        
-        foreach ($dates as $dateItem) {
-            $followupDate = Carbon::parse($dateItem['date']);
-            if ($followupDate->lt(Carbon::today())) {
-                return true;
-            }
-        }
-        
-        return false;
+        $this->update([
+            'archived_at' => now(),
+            'archived_by' => $userId,
+            'archive_type' => $archiveType
+        ]);
     }
-
-    // Check if follow up is today
-    // public function getIsFollowupTodayAttribute()
-    // {
-    //     return $this->followup_date && $this->followup_date->isToday();
-    // }
-
-        public function getTodayFollowupDateAttribute()
-    {
-        if (!$this->followup_date) return null;
-        
-        $today = Carbon::today()->format('Y-m-d');
-        $dates = json_decode($this->followup_date, true);
-        
-        foreach ($dates as $dateItem) {
-            if ($dateItem['date'] === $today) {
-                return Carbon::parse($dateItem['date']);
-            }
-        }
-        
-        return null;
-    }
-
-public function archive($userId, $archiveType = 'keep')
-{
-    $this->update([
-        'archived_at' => now(),
-        'archived_by' => $userId,
-        'archive_type' => $archiveType
-    ]);
-}
 
     public function moveToMaintain($userId)
     {
@@ -185,7 +244,17 @@ public function archive($userId, $archiveType = 'keep')
         ]);
     }
 
-    // Scope untuk filter berdasarkan archive_type
+    // Restore customer from archive
+    public function restore()
+    {
+        $this->update([
+            'is_archived' => false,
+            'archived_at' => null,
+            'archived_by' => null
+        ]);
+    }
+
+    // Scopes
     public function scopeKeepArchived($query)
     {
         return $query->whereNotNull('archived_at')
@@ -197,17 +266,7 @@ public function archive($userId, $archiveType = 'keep')
         return $query->whereNotNull('archived_at')
                     ->where('archive_type', 'maintain');
     }
-    // Restore customer from archive
-    public function restore()
-    {
-        $this->update([
-            'is_archived' => false,
-            'archived_at' => null,
-            'archived_by' => null
-        ]);
-    }
 
-    // Scope untuk filter
     public function scopeByStatus($query, $status)
     {
         $statusGroups = [
@@ -223,15 +282,65 @@ public function archive($userId, $archiveType = 'keep')
         return $query->where('status_fu', $status);
     }
 
+    // Scope for follow-up today - checks all follow-up dates
     public function scopeFollowupToday($query)
     {
-        return $query->whereDate('followup_date', Carbon::today());
+        $today = Carbon::today()->format('Y-m-d');
+        
+        return $query->where(function($q) use ($today) {
+            $q->where('fu_ke_1', $today)
+              ->orWhere('next_fu_2', $today)
+              ->orWhere('next_fu_3', $today)
+              ->orWhere('next_fu_4', $today)
+              ->orWhere('next_fu_5', $today);
+        });
+    }
+
+    // Scope for pending follow-up today (not completed)
+    public function scopePendingFollowupToday($query)
+    {
+        $today = Carbon::today()->format('Y-m-d');
+        
+        return $query->where(function($q) use ($today) {
+            // First follow-up (always pending as it has no checkbox)
+            $q->where('fu_ke_1', $today)
+              // Other follow-ups that are not checked
+              ->orWhere(function($subQ) use ($today) {
+                  $subQ->where('next_fu_2', $today)->where('fu_2_checked', false);
+              })
+              ->orWhere(function($subQ) use ($today) {
+                  $subQ->where('next_fu_3', $today)->where('fu_3_checked', false);
+              })
+              ->orWhere(function($subQ) use ($today) {
+                  $subQ->where('next_fu_4', $today)->where('fu_4_checked', false);
+              })
+              ->orWhere(function($subQ) use ($today) {
+                  $subQ->where('next_fu_5', $today)->where('fu_5_checked', false);
+              });
+        });
     }
 
     public function scopeOverdue($query)
     {
-        return $query->where('followup_date', '<', Carbon::today())
-                    ->where('fu_checkbox', false);
+        $today = Carbon::today()->format('Y-m-d');
+        
+        return $query->where(function($q) use ($today) {
+            // First follow-up overdue
+            $q->where('fu_ke_1', '<', $today)
+              // Other follow-ups overdue and not completed
+              ->orWhere(function($subQ) use ($today) {
+                  $subQ->where('next_fu_2', '<', $today)->where('fu_2_checked', false);
+              })
+              ->orWhere(function($subQ) use ($today) {
+                  $subQ->where('next_fu_3', '<', $today)->where('fu_3_checked', false);
+              })
+              ->orWhere(function($subQ) use ($today) {
+                  $subQ->where('next_fu_4', '<', $today)->where('fu_4_checked', false);
+              })
+              ->orWhere(function($subQ) use ($today) {
+                  $subQ->where('next_fu_5', '<', $today)->where('fu_5_checked', false);
+              });
+        });
     }
 
     public function scopeByAgent($query, $userId)
@@ -248,5 +357,4 @@ public function archive($userId, $archiveType = 'keep')
     {
         return $query->where('is_archived', true);
     }
-    
 }
