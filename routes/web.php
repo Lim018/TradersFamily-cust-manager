@@ -30,10 +30,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/customer/{customer}/restore', [DashboardController::class, 'restoreCustomer'])->name('customer.restore');
 
     // Customer management routes
-    Route::patch('/dashboard/customer/{customer}', [DashboardController::class, 'updateCustomer'])
-        ->name('customer.update');
-    Route::patch('/customer/{customer}/mark-completed', [DashboardController::class, 'markCompleted'])
-        ->name('customer.mark-completed');
+    // Route::patch('/dashboard/customer/{customer}', [DashboardController::class, 'updateCustomer'])
+    //     ->name('customer.update');
+    // Route::patch('/customer/{customer}/mark-completed', [DashboardController::class, 'markCompleted'])
+    //     ->name('customer.mark-completed');
+
+    Route::patch('/{customer}/followup-update', [DashboardController::class, 'updateFollowup'])->name('customer.followup-update');
+    Route::patch('/{customer}/mark-fu-completed/{followupNumber}', [DashboardController::class, 'markFollowupCompleted'])->name('customer.mark-fu-completed');
     Route::patch('/customer/{customer}/archive', [DashboardController::class, 'archiveCustomer'])
         ->name('customer.archive');
     Route::patch('/customer/{customer}/restore', [DashboardController::class, 'restoreCustomer'])
