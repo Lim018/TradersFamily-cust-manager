@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Customer;
 use App\Models\ActivityLog;
+use App\Models\Agent;
+use App\Models\Maintain;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -369,5 +371,30 @@ class AdminController extends Controller
         ];
 
         return response()->json($metrics);
+    }
+    public function showMaintainData(Request $request)
+    {
+        $users = User::select('agent_code', 'name')
+            ->where('role', '!=', 'admin')
+            ->get();
+
+        $query = Maintain::query();
+
+
+        // Filter berdasarkan role pengguna
+        if (auth()->user()->role === 'agent') {
+            $query->where('agent_code', auth()->user()->agent_code);
+        } elseif ($request->has('agent_code') && $request->agent_code) {
+            $query->where('agent_code', $request->agent_code);
+        }
+
+        if ($request->has('search') && $request->search) {
+            $query->where('nama', 'like', '%' . $request->search . '%');
+        }
+
+        $maintainData = Maintain::with('user')->paginate(10);
+
+
+        return view('admin.archive_maintain', compact('users', 'maintainData'));
     }
 }

@@ -255,5 +255,76 @@ class WebhookController extends Controller
 
         return $data;
     }
+    public function getMaintainData(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'agent_code' => 'nullable|string',
+                'search' => 'nullable|string',
+            ]);
+
+            $query = Maintain::query();
+
+            if ($validated['agent_code']) {
+                $query->where('agent_code', $validated['agent_code']);
+            }
+
+            if ($validated['search']) {
+                $query->where('nama', 'like', '%' . $validated['search'] . '%');
+            }
+
+            $maintainData = $query->paginate(10);
+
+            if ($maintainData->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'No maintain data found.',
+                    'data' => [],
+                ], 200);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data_type' => 'maintain',
+                'data' => $maintainData,
+                'total_records' => $maintainData->total(),
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching maintain data: ' . $e->getMessage(), [
+                'request' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getMaintainNotes($id)
+    {
+        try {
+            $maintain = Maintain::findOrFail($id);
+            $notes = [
+                'alasan_depo' => $maintain->alasan_depo,
+                'fu_1_note' => $maintain->fu_1_note,
+                'fu_2_note' => $maintain->fu_2_note,
+                'fu_3_note' => $maintain->fu_3_note,
+                'fu_4_note' => $maintain->fu_4_note,
+                'fu_5_note' => $maintain->fu_5_note,
+            ];
+            $notesHtml = '';
+            foreach ($notes as $key => $note) {
+                if ($note) {
+                    $notesHtml .= "<p><strong>" . str_replace('_', ' ', ucfirst($key)) . ":</strong> $note</p>";
+                }
+            }
+            return response()->json([
+                'success' => true,
+                'notes' => $notesHtml ?: '<p>No notes available</p>',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching notes: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
     
 }
