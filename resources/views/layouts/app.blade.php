@@ -528,13 +528,16 @@
                         <i class="fas fa-chevron-down ml-auto dropdown-arrow"></i>
                     </button>
                     <div class="dropdown-menu">
-                        <a href="{{ route('dashboard.archived_maintain') }}"
-                           class="{{ request()->routeIs('dashboard.archived_maintain') ? 'active' : '' }}">
+                       <a href="{{ route('dashboard.archived_maintain') }}"
+                        class="flex items-center px-4 py-3 font-medium text-gray-700 hover:bg-gray-100
+                                {{ request()->routeIs('dashboard.archived_maintain') ? ' bg-gray-300 text-gray-900 rounded-lg' : '' }}">
                             <i class="fas fa-cog mr-3 text-blue-600"></i>
                             Maintain
                         </a>
+
                         <a href="{{ route('dashboard.archived_keep') }}"
-                           class="{{ request()->routeIs('dashboard.archived_keep') ? 'active' : '' }}">
+                        class="flex items-center px-4 py-3 font-medium text-gray-700 hover:bg-gray-100
+                                {{ request()->routeIs('dashboard.archived_keep') ? ' bg-gray-300 text-gray-900 rounded-lg' : '' }}">
                             <i class="fas fa-handshake mr-3 text-green-600"></i>
                             Closing
                         </a>
@@ -575,21 +578,28 @@
     </div>
 
     <!-- Base JavaScript -->
-    <script>
-        function toggleDropdown(button) {
-            const dropdown = button.parentElement;
-            const isOpen = dropdown.classList.contains('open');
-            
-            // Close all other dropdowns
-            document.querySelectorAll('.dropdown.open').forEach(d => {
-                if (d !== dropdown) {
-                    d.classList.remove('open');
-                }
-            });
-            
-            // Toggle current dropdown
-            dropdown.classList.toggle('open', !isOpen);
+        <script>
+            function toggleDropdown(button) {
+        const dropdown = button.parentElement;
+        const isOpen = dropdown.classList.contains('open');
+        const isActive = button.classList.contains('has-active-child');
+        
+        // Close all other dropdowns
+        document.querySelectorAll('.dropdown.open').forEach(d => {
+            if (d !== dropdown) {
+                d.classList.remove('open');
+            }
+        });
+
+        // Kalau dropdown punya child aktif, jangan izinkan menutup
+        if (isActive && isOpen) {
+            return; // biarkan tetap terbuka
         }
+
+        // Toggle current dropdown
+        dropdown.classList.toggle('open', !isOpen);
+    }
+
 
         // Close dropdown when clicking outside
         document.addEventListener('click', function(event) {
