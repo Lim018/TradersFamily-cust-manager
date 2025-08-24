@@ -1,9 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Arsip Maintain - Traders Family')
-
 @section('page-title', 'Arsip Maintain')
-
 @section('page-description', 'Kelola data investor maintain')
 
 @section('content')
@@ -135,7 +133,7 @@
                         @php
                             $hasNotes = $item->alasan_depo || collect(range(1, 5))->some(fn($i) => $item->{"fu_{$i}_note"});
                         @endphp
-                        <button onclick="showNotesModal({{ $item->id }})" 
+                        <button onclick='showNotesModal(@json($item))' 
                                 class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200 flex items-center {{ $hasNotes ? '' : 'opacity-50' }}">
                             <i class="fas fa-sticky-note mr-1"></i>
                             {{ $hasNotes ? 'View Notes' : 'No Notes' }}
@@ -199,7 +197,7 @@
         </button>
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Maintain Notes</h3>
         <div id="notesContent" class="space-y-2 text-sm text-gray-700">
-            <!-- Konten notes akan dimasukkan via JS -->
+            <!-- Konten notes masuk via JS -->
         </div>
     </div>
 </div>
@@ -207,14 +205,24 @@
 
 @push('scripts')
 <script>
-    function showNotesModal(id) {
+    function showNotesModal(item) {
         const modal = document.getElementById('notesModal');
         const notesContent = document.getElementById('notesContent');
-        
-        // In a real application, you would fetch notes via AJAX
-        // For now, we'll show a placeholder
-        notesContent.innerHTML = '<p>Loading notes...</p>';
-        
+
+        let html = '';
+
+        if (item.alasan_depo) {
+            html += `<p><strong>Alasan Deposit:</strong> ${item.alasan_depo}</p>`;
+        }
+
+        for (let i = 1; i <= 5; i++) {
+            if (item[`fu_${i}_note`]) {
+                html += `<p><strong>FU-${i}:</strong> ${item[`fu_${i}_note`]}</p>`;
+            }
+        }
+
+        notesContent.innerHTML = html || '<p>Tidak ada catatan</p>';
+
         modal.classList.remove('hidden');
         modal.classList.add('flex');
     }
