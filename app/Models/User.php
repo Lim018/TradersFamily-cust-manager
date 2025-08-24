@@ -57,6 +57,12 @@ class User extends Authenticatable
         return $this->hasMany(ActivityLog::class);
     }
 
+    // Relationship dengan Maintain data
+    public function maintainData()
+    {
+        return $this->hasMany(Maintain::class, 'agent_code', 'agent_code');
+    }
+
     // Check if user is admin
     public function isAdmin()
     {
@@ -73,5 +79,11 @@ class User extends Authenticatable
     public function getAgentDisplayAttribute()
     {
         return $this->agent_code ? "{$this->name} ({$this->agent_code})" : $this->name;
+    }
+
+    // Get full agent info
+    public function getFullAgentInfoAttribute()
+    {
+        return $this->agent_code ? "Agent {$this->agent_code} - {$this->name}" : $this->name;
     }
 }
