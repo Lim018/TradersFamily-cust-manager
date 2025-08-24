@@ -441,7 +441,7 @@
                                             <i class="fas fa-user mr-2 text-gray-400"></i>
                                             <div>
                                                 <div class="text-sm font-semibold text-gray-900">
-                                                    {{ $item->users->name ?? 'Unknown Agent' }}
+                                                    {{ $item->user->name ?? 'Unknown Agent' }}
                                                 </div>
                                                 <div class="text-xs text-gray-500">
                                                     {{ $item->agent_code ?? '-' }}

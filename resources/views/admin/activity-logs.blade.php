@@ -292,6 +292,10 @@
                     <i class="fas fa-history mr-3"></i>
                     Activity Logs
                 </a>
+                <a href="{{ route('maintain-data') }}" class="sidebar-link active flex items-center px-4 py-3 text-white font-medium">
+                    <i class="fas fa-archive mr-3"></i>
+                    Arsip Maintain
+                </a>
             </nav>
             
             <!-- Logout -->

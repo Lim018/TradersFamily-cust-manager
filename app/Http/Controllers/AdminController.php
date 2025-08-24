@@ -374,26 +374,36 @@ class AdminController extends Controller
     }
     public function showMaintainData(Request $request)
     {
+        // Get all users with agent role, excluding admin
         $users = User::select('agent_code', 'name')
             ->where('role', '!=', 'admin')
+            ->whereNotNull('agent_code') // Only get users with agent_code
+            ->orderBy('agent_code')
             ->get();
 
         $query = Maintain::query();
 
-
         // Filter berdasarkan role pengguna
         if (auth()->user()->role === 'agent') {
+            // Jika user adalah agent, hanya tampilkan data milik agent tersebut
             $query->where('agent_code', auth()->user()->agent_code);
         } elseif ($request->has('agent_code') && $request->agent_code) {
+            // Jika admin memilih agent tertentu
             $query->where('agent_code', $request->agent_code);
         }
 
+        // Filter pencarian berdasarkan nama
         if ($request->has('search') && $request->search) {
             $query->where('nama', 'like', '%' . $request->search . '%');
         }
 
-        $maintainData = Maintain::with('user')->paginate(10);
+        // Ambil data dengan relasi user dan pagination
+        $maintainData = $query->with('user')
+            ->orderBy('tanggal', 'desc')
+            ->paginate(10);
 
+        // Append query parameters untuk pagination
+        $maintainData->appends($request->query());
 
         return view('admin.archive_maintain', compact('users', 'maintainData'));
     }
