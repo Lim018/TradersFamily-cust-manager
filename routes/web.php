@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -50,6 +51,7 @@ Route::middleware('auth')->group(function () {
             ->name('admin.activity-logs');
         Route::get('/admin/customer/{customer}/logs', [ActivityLogController::class, 'customerLogs'])
             ->name('admin.customer-logs');
+        Route::get('/maintain', [AdminController::class, 'showMaintainData'])->name('maintain-data');
     });
 });
 

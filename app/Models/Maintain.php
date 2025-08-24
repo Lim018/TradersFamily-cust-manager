@@ -60,4 +60,9 @@ class Maintain extends Model
         'fu_5_date' => 'date',
         'fu_5_checked' => 'boolean',
     ];
+        public function user()
+    {
+        return $this->belongsTo(User::class, 'agent_code', 'agent_code');
+    }
+
 }
