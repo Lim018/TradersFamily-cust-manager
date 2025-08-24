@@ -60,9 +60,28 @@ class Maintain extends Model
         'fu_5_date' => 'date',
         'fu_5_checked' => 'boolean',
     ];
-        public function user()
+
+    // Relationship dengan User berdasarkan agent_code
+    public function user()
     {
         return $this->belongsTo(User::class, 'agent_code', 'agent_code');
     }
 
+    // Alternative relationship name for clarity
+    public function agent()
+    {
+        return $this->belongsTo(User::class, 'agent_code', 'agent_code');
+    }
+
+    // Accessor untuk mendapatkan nama agent
+    public function getAgentNameAttribute()
+    {
+        return $this->user ? $this->user->name : 'Unknown Agent';
+    }
+
+    // Accessor untuk mendapatkan info agent lengkap
+    public function getAgentInfoAttribute()
+    {
+        return $this->user ? "{$this->user->name} ({$this->agent_code})" : "Unknown ({$this->agent_code})";
+    }
 }
