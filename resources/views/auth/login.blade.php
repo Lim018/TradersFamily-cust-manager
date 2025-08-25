@@ -335,7 +335,7 @@
     <div class="login-container">
         <div class="login-card">
             <div class="login-form">
-                <h1 class="login-title">Traders Family</h1>
+                <h1 class="login-title">Biggest Team</h1>
                 
                 <!-- Session Status -->
                 <x-auth-session-status class="session-status" :status="session('status')" />
