@@ -447,7 +447,7 @@ private function calculateFollowupToday($customers)
         $user = Auth::user();
         
         // Pastikan agent hanya bisa update customer miliknya
-        if ($user->role === 'agent' && $customer->user_id !== $user->id) {
+        if ($user->role == 'agent' && $customer->user_id != $user->id) {
             abort(403);
         }
         
