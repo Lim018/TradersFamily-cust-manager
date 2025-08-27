@@ -95,11 +95,56 @@
                             </div>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{ $agent->customers_count }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{ $agent->normal_count }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{ $agent->warm_count }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{ $agent->hot_count }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{ $agent->closed_count }}</td>
+                    <td class="px-6 py-4">
+                        @if($agent->customers_count > 0)
+                            <a href="{{ route('admin.agent-customers', ['userId' => $agent->id]) }}" 
+                               class="text-blue-600 hover:text-blue-800 font-semibold hover:underline">
+                                {{ $agent->customers_count }}
+                            </a>
+                        @else
+                            <span class="text-sm text-gray-900">0</span>
+                        @endif
+                    </td>
+                    <td class="px-6 py-4">
+                        @if($agent->normal_count > 0)
+                            <a href="{{ route('admin.agent-customers', ['userId' => $agent->id, 'status' => 'normal']) }}" 
+                               class="text-green-600 hover:text-green-800 font-semibold hover:underline">
+                                {{ $agent->normal_count }}
+                            </a>
+                        @else
+                            <span class="text-sm text-gray-900">0</span>
+                        @endif
+                    </td>
+                    <td class="px-6 py-4">
+                        @if($agent->warm_count > 0)
+                            <a href="{{ route('admin.agent-customers', ['userId' => $agent->id, 'status' => 'warm']) }}" 
+                               class="text-yellow-600 hover:text-yellow-800 font-semibold hover:underline">
+                                {{ $agent->warm_count }}
+                            </a>
+                        @else
+                            <span class="text-sm text-gray-900">0</span>
+                        @endif
+                    </td>
+                    <td class="px-6 py-4">
+                        @if($agent->hot_count > 0)
+                            <a href="{{ route('admin.agent-customers', ['userId' => $agent->id, 'status' => 'hot']) }}" 
+                               class="text-red-600 hover:text-red-800 font-semibold hover:underline">
+                                {{ $agent->hot_count }}
+                            </a>
+                        @else
+                            <span class="text-sm text-gray-900">0</span>
+                        @endif
+                    </td>
+                    <td class="px-6 py-4">
+                        @if($agent->closed_count > 0)
+                            <a href="{{ route('admin.agent-customers', ['userId' => $agent->id, 'status' => 'closed']) }}" 
+                               class="text-purple-600 hover:text-purple-800 font-semibold hover:underline">
+                                {{ $agent->closed_count }}
+                            </a>
+                        @else
+                            <span class="text-sm text-gray-900">0</span>
+                        @endif
+                    </td>
                     <td class="px-6 py-4">
                         @php
                             $conversionRate = $agent->customers_count > 0 ? round(($agent->closed_count / $agent->customers_count) * 100, 1) : 0;
