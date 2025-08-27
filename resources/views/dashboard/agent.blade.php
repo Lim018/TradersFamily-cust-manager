@@ -244,10 +244,9 @@
                                 @endif
                                 <form method="POST" action="{{ route('customer.archive', $customer->id) }}" class="inline">
                                     @csrf
-                                    @method('PATCH')
                                     <button type="submit" onclick="return confirm('Yakin ingin mengarsipkan customer ini?')"
                                             class="btn-danger px-2 py-1 rounded text-xs font-medium flex items-center justify-center w-full">
-                                        <i class="fas fa-archive mr-1"></i>Arsip
+                                        <i class="fas fa-archive mr-1"></i>Closing
                                     </button>
                                 </form>
                             </div>

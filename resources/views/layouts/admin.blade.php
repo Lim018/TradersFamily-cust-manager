@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Traders Family') - Admin Panel</title>
+    <title>@yield('title', 'Biggest Team') - Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -300,7 +300,7 @@
             <div class="p-6 border-b border-gray-100 flex justify-between items-center">
                 <div>
                     <h1 class="text-xl font-bold bg-gradient-to-r from-[#2D5A27] to-cyan-600 bg-clip-text text-transparent">
-                        Traders Family
+                        Biggest Team
                     </h1>
                     <p class="text-sm text-gray-600 mt-1">Admin Panel</p>
                 </div>

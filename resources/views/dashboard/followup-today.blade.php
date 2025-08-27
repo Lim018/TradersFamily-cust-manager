@@ -101,9 +101,14 @@
             $whatsappLink = '';
             if($customer->phone) {
                 $cleanPhone = preg_replace('/[^0-9]/', '', $customer->phone);
-                if(substr($cleanPhone, 0, 1) == '0') {
+                
+                // Perbaikan logika untuk menambahkan +62
+                if (substr($cleanPhone, 0, 1) === '0') {
                     $cleanPhone = '62' . substr($cleanPhone, 1);
+                } elseif (substr($cleanPhone, 0, 2) !== '62') {
+                    $cleanPhone = '62' . $cleanPhone;
                 }
+                
                 $message = urlencode("Halo {$customer->nama}, ini dari Traders Family. Ada waktu untuk follow-up hari ini?");
                 $whatsappLink = "https://wa.me/{$cleanPhone}?text={$message}";
             }
