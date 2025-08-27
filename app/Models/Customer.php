@@ -26,6 +26,8 @@ class Customer extends Model
         'alasan_depo_decline',
         'fu_jumlah',
         'fu_ke_1',
+        'fu_notes_1',
+        'fu_checked_1',
         'next_fu_2',
         'fu_2_checked',
         'fu_2_note',
@@ -44,6 +46,7 @@ class Customer extends Model
     ];
 
     protected $casts = [
+        'fu_checked_1' => 'boolean',
         'fu_2_checked' => 'boolean',
         'fu_3_checked' => 'boolean',
         'fu_4_checked' => 'boolean',
