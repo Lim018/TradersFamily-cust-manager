@@ -28,6 +28,8 @@ return new class extends Migration
             $table->string('alasan_depo_decline')->nullable();
             $table->integer('fu_jumlah')->default(0);
             $table->date('fu_ke_1')->nullable();
+            $table->longText('fu_notes_1')->nullable();
+            $table->boolean('fu_checked_1')->default(false);
 
 
             for ($i = 2; $i <= 5; $i++) {
