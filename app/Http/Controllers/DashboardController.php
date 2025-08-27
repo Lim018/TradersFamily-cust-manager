@@ -43,8 +43,6 @@ if ($request->filled('email')) {
 if ($request->filled('phone')) {
     $query->where('phone', 'like', $request->phone . '%');
 }
-
-
         
         // Filter berdasarkan status
         if ($request->filled('status')) {
@@ -128,22 +126,31 @@ if ($request->filled('phone')) {
         return view('dashboard.agent', compact('customers', 'stats'));
     }
 
-    public function getNotes($id)
+        public function getNotes($id)
     {
-        $customer = Customer::findOrFail($id);
+        try {
+            $customer = Customer::findOrFail($id);
 
-        $fu_notes = [];
-        foreach (range(2, 5) as $i) {
-            $field = "fu_{$i}_note";
-            if ($customer->$field) {
-                $fu_notes[] = $customer->$field;
+            $fu_notes = [];
+            foreach (range(2, 5) as $i) {
+                $field = "fu_{$i}_note";
+                if ($customer->$field) {
+                    $fu_notes[] = $customer->$field;
+                }
             }
-        }
 
-        return response()->json([
-            'report' => $customer->report,
-            'fu_notes' => $fu_notes,
-        ]);
+            return response()->json([
+                'report' => $customer->report,
+                'fu_notes_1' => $customer->fu_notes_1, // Tambahkan fu_notes_1
+                'fu_notes' => $fu_notes, // FU-2 hingga FU-5
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Gagal mengambil catatan pelanggan', [
+                'customer_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json(['error' => 'Gagal mengambil catatan'], 500);
+        }
     }
 
     private function calculateFollowupTodayPending($customers)
