@@ -287,6 +287,50 @@ private function calculateFollowupToday($customers)
         
         return view('dashboard.admin', compact('stats', 'agentStats', 'chartData'));
     }
+
+    public function showAgentCustomers($userId, $status = null)
+    {
+        $user = Auth::user();
+        
+        // Only admin can access this
+        if ($user->role !== 'admin') {
+            abort(403);
+        }
+        
+        $agent = \App\Models\User::where('role', 'agent')->findOrFail($userId);
+        
+        $query = Customer::where('user_id', $userId)->active();
+        
+        // Filter by status if provided
+        if ($status) {
+            $statusGroups = [
+                'normal' => ['normal', 'normal(prospect)'],
+                'warm' => ['warm', 'warm(potential)'],
+                'hot' => ['hot', 'hot(closeable)'],
+                'closed' => null // Special case for closed deals
+            ];
+            
+            if ($status === 'closed') {
+                $query->whereNotNull('tanggal_closing');
+            } elseif (isset($statusGroups[$status])) {
+                $query->whereIn('status_fu', $statusGroups[$status]);
+            } else {
+                $query->where('status_fu', $status);
+            }
+        }
+        
+        $customers = $query->orderBy('created_at', 'desc')->paginate(15);
+        
+        $statusCounts = [
+            'total' => Customer::where('user_id', $userId)->active()->count(),
+            'normal' => Customer::where('user_id', $userId)->active()->whereIn('status_fu', ['normal', 'normal(prospect)'])->count(),
+            'warm' => Customer::where('user_id', $userId)->active()->whereIn('status_fu', ['warm', 'warm(potential)'])->count(),
+            'hot' => Customer::where('user_id', $userId)->active()->whereIn('status_fu', ['hot', 'hot(closeable)'])->count(),
+            'closed' => Customer::where('user_id', $userId)->active()->whereNotNull('tanggal_closing')->count(),
+        ];
+        
+        return view('admin.agent-customers', compact('agent', 'customers', 'status', 'statusCounts'));
+    }
     
     public function followupToday()
     {
