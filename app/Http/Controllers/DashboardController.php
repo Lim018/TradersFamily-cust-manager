@@ -29,9 +29,22 @@ class DashboardController extends Controller
         $query = Customer::where('user_id', $user->id)->active(); // Only show active customers
         
         // Filter berdasarkan pencarian nama
-        if ($request->filled('search')) {
-            $query->where('nama', 'like', '%' . $request->search . '%');
-        }
+        // Filter berdasarkan nama
+if ($request->filled('search')) {
+    $query->where('nama', 'like', $request->search . '%');
+}
+
+// Filter berdasarkan email
+if ($request->filled('email')) {
+    $query->where('email', 'like', $request->email . '%');
+}
+
+// Filter berdasarkan telepon
+if ($request->filled('phone')) {
+    $query->where('phone', 'like', $request->phone . '%');
+}
+
+
         
         // Filter berdasarkan status
         if ($request->filled('status')) {
