@@ -254,8 +254,10 @@
                         
                         <!-- Reports & Notes Button -->
                         <td class="px-4 py-4">
-                            @php
-                                $hasNotes = $customer->report || collect(range(2, 5))->some(fn($i) => $customer->{"fu_{$i}_note"});
+                             @php
+                                $hasNotes = $customer->report 
+                                    || $customer->fu_notes_1 
+                                    || collect(range(2, 5))->some(fn($i) => $customer->{"fu_{$i}_note"});
                             @endphp
                             <button onclick="showNotesModal({{ $customer->id }})" 
                                     class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200 flex items-center {{ $hasNotes ? '' : 'opacity-50' }}">
@@ -405,6 +407,15 @@
                         </div>
                     `;
                 }
+
+                if (data.fu_notes_1) {
+                content += `
+                    <div class="mb-1">
+                        <div class="text-xs text-blue-600">Catatan FU-1:</div>
+                        <div class="text-xs text-gray-700 break-words">${data.fu_notes_1}</div>
+                    </div>
+                `;
+            }
 
                 if (data.fu_notes && data.fu_notes.length > 0) {
                     data.fu_notes.forEach((note, index) => {
