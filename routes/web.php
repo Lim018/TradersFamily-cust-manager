@@ -39,6 +39,8 @@ Route::middleware('auth')->group(function () {
     
     // Admin only routes
     Route::middleware('admin')->group(function () {
+        Route::get('/admin/agents/{userId}/customers/{status?}', [DashboardController::class, 'showAgentCustomers'])
+        ->name('admin.agent-customers');
         Route::get('/admin/activity-logs', [ActivityLogController::class, 'index'])
             ->name('admin.activity-logs');
         Route::get('/admin/customer/{customer}/logs', [ActivityLogController::class, 'customerLogs'])

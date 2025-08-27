@@ -189,6 +189,9 @@
                                 @endphp
                                 <div class="text-xs text-green-600 mb-1">
                                     FU-1: {{ $date1->format('d/m/Y') }}
+                                    @if($is_today1)
+                                        <i class="fas fa-calendar-day ml-1"></i>
+                                    @endif
                                 </div>
                             @endif
                             
@@ -201,9 +204,15 @@
                                         $is_today = $date->isToday();
                                         $is_past = $date->isPast() && !$date->isToday();
                                         $is_checked = $customer->{"fu_{$i}_checked"};
+                                        
+                                        // Color logic based on completion status
+                                        if ($is_checked) {
+                                            $color_class = 'text-green-600'; // Completed (fu_x_checked = 1)
+                                        } else {
+                                            $color_class = 'text-blue-600';  // Not completed (fu_x_checked = 0)
+                                        }
                                     @endphp
-                                    <div class="text-xs 
-                                        {{ $is_past ? 'text-green-600' : ($is_today ? 'text-blue-600' : 'text-blue-600') }} mb-1">
+                                    <div class="text-xs {{ $color_class }} mb-1">
                                         FU-{{ $i }}: {{ $date->format('d/m/Y') }}
                                         @if($is_today)
                                             <i class="fas fa-calendar-day ml-1"></i>
@@ -223,17 +232,20 @@
                                         $is_completed = $dateObj['completed'] ?? false;
                                         $is_overdue = $date->isPast() && !$date->isToday() && !$is_completed;
                                         $is_today = $date->isToday();
+                                        
+                                        // Color logic for JSON followups
+                                        if ($is_completed) {
+                                            $json_color_class = 'text-green-600'; // Completed
+                                        } else {
+                                            $json_color_class = 'text-blue-600';  // Not completed
+                                        }
                                     } catch (\Exception $e) {
                                         continue;
                                     }
                                 @endphp
-                                <div class="text-xs {{ $is_overdue ? 'text-red-600' : ($is_today ? 'text-green-600' : 'text-blue-600') }} mb-1">
+                                <div class="text-xs {{ $json_color_class }} mb-1">
                                     Extra-{{ $index + 1 }}: {{ $date->format('d/m/Y') }}
-                                    @if($is_completed)
-                                        <i class="fas fa-check text-green-500 ml-1"></i>
-                                    @elseif($is_overdue)
-                                        <i class="fas fa-exclamation-triangle ml-1"></i>
-                                    @elseif($is_today)
+                                    @if($is_today)
                                         <i class="fas fa-calendar-day ml-1"></i>
                                     @endif
                                 </div>
