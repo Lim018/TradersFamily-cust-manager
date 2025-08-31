@@ -47,9 +47,7 @@
                 <tr>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Customer Info</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kontak</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Keuangan</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Follow-up</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Notes</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
@@ -70,14 +68,6 @@
                         <div class="text-xs text-gray-500">Reg: {{ $item->regis ?? '-' }}</div>
                     </td>
                     
-                    <!-- Kontak -->
-                    <td class="px-4 py-4">
-                        <div class="flex items-center text-sm text-gray-900 mb-1">
-                            <i class="fas fa-user mr-2 text-gray-400"></i>
-                            <span class="truncate max-w-32">{{ $item->agent_code ?? '-' }}</span>
-                        </div>
-                    </td>
-                    
                     <!-- Keuangan -->
                     <td class="px-4 py-4">
                         <div class="text-sm text-gray-900">
@@ -90,13 +80,6 @@
                                 <span class="text-xs">Last Balance: {{ number_format($item->last_balance, 2) }}</span>
                             </div>
                         </div>
-                    </td>
-                    
-                    <!-- Status -->
-                    <td class="px-4 py-4">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $item->status_color }}">
-                            {{ $item->status_data ?? 'No Status' }}
-                        </span>
                     </td>
                     
                     <!-- Follow-up -->
