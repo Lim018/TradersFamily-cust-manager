@@ -29,6 +29,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/archived/maintain', [DashboardController::class, 'archiveMaintain'])->name('dashboard.archived_maintain');
     Route::post('/customer/{customer}/archive', [DashboardController::class, 'archiveCustomer'])->name('customer.archive');
     Route::patch('/customer/{customer}/restore', [DashboardController::class, 'restoreCustomer'])->name('customer.restore');
+    Route::delete('/dashboard/archived/maintain/{id}', [DashboardController::class, 'destroyArchiveMaintain'])
+    ->name('dashboard.archived_maintain.destroy');
+
 
     Route::patch('/{customer}/followup-update', [DashboardController::class, 'updateFollowup'])->name('customer.followup-update');
     Route::patch('/{customer}/mark-fu-completed/{followupNumber}', [DashboardController::class, 'markFollowupCompleted'])->name('customer.mark-fu-completed');

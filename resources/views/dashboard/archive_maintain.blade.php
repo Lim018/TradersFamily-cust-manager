@@ -52,6 +52,7 @@
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Follow-up</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Notes</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -139,6 +140,20 @@
                             {{ $hasNotes ? 'View Notes' : 'No Notes' }}
                         </button>
                     </td>
+
+                    <!-- Aksi -->
+                    <td class="px-4 py-4">
+                        <form action="{{ route('dashboard.archived_maintain.destroy', ['id' => $item->id]) }}"
+                              method="POST"
+                              onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit"
+                                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200 flex items-center">
+                                <i class="fas fa-trash-alt mr-1"></i> Hapus
+                            </button>
+                        </form>
+                    </td>
                 </tr>
                 @empty
                 <tr>
@@ -152,7 +167,7 @@
             </tbody>
         </table>
     </div>
-    
+
     <!-- Pagination -->
     @if ($maintain->hasPages())
         <div class="border-t border-gray-100">
