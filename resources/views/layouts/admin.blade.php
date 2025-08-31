@@ -332,7 +332,7 @@
             <div class="absolute bottom-6 left-4 right-4">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="flex items-center w-full px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200">
+                    <button type="submit" class="flex items-center px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200">
                         <i class="fas fa-sign-out-alt mr-3"></i>
                         Logout
                     </button>
