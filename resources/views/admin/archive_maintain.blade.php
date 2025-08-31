@@ -33,7 +33,7 @@
                         <option value="">Semua Agent</option>
                         @foreach ($users as $user)
                             <option value="{{ $user->agent_code }}" {{ request('agent_code') == $user->agent_code ? 'selected' : '' }}>
-                                {{ $user->agent_code }} ({{ $user->name ?? 'Unknown' }})
+                                {{ $user->name ?? 'Unknown' }}
                             </option>
                         @endforeach
                     </select>
@@ -102,9 +102,6 @@
                             <div>
                                 <div class="text-sm font-semibold text-gray-900">
                                     {{ $item->user->name ?? 'Unknown Agent' }}
-                                </div>
-                                <div class="text-xs text-gray-500">
-                                    {{ $item->agent_code ?? '-' }}
                                 </div>
                             </div>
                         </div>

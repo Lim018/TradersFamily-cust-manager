@@ -75,8 +75,6 @@
                     <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Normal</th>
                     <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Warm</th>
                     <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Hot</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Closed</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Conversion Rate</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -89,9 +87,6 @@
                             </div>
                             <div>
                                 <div class="text-sm font-semibold text-gray-900">{{ $agent->name }}</div>
-                                @if($agent->agent_code)
-                                    <div class="text-sm text-gray-500">{{ $agent->agent_code }}</div>
-                                @endif
                             </div>
                         </div>
                     </td>
@@ -134,27 +129,6 @@
                         @else
                             <span class="text-sm text-gray-900">0</span>
                         @endif
-                    </td>
-                    <td class="px-6 py-4">
-                        @if($agent->closed_count > 0)
-                            <a href="{{ route('admin.agent-customers', ['userId' => $agent->id, 'status' => 'closed']) }}" 
-                               class="text-purple-600 hover:text-purple-800 font-semibold hover:underline">
-                                {{ $agent->closed_count }}
-                            </a>
-                        @else
-                            <span class="text-sm text-gray-900">0</span>
-                        @endif
-                    </td>
-                    <td class="px-6 py-4">
-                        @php
-                            $conversionRate = $agent->customers_count > 0 ? round(($agent->closed_count / $agent->customers_count) * 100, 1) : 0;
-                        @endphp
-                        <div class="flex items-center">
-                            <div class="flex-1 bg-gray-200 rounded-full h-2 mr-2">
-                                <div class="bg-green-600 h-2 rounded-full" style="width: {{ $conversionRate }}%"></div>
-                            </div>
-                            <span class="text-sm text-gray-900">{{ $conversionRate }}%</span>
-                        </div>
                     </td>
                 </tr>
                 @endforeach
