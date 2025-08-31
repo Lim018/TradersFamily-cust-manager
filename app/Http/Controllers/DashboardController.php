@@ -656,24 +656,32 @@ private function calculateFollowupToday($customers)
         return view('dashboard.archive_keep', compact('keep', 'stats'));
     }
 
-    public function archiveMaintain(Request $request)
+        public function archiveMaintain(Request $request)
     {
+        $agentCode = auth()->user()->agent_code; // ambil agent_code dari user login
         $search = $request->query('search');
-        $maintainQuery = Maintain::when($search, function ($query, $search) {
-            return $query->where('nama', 'like', "%{$search}%")
-                        ->orWhere('agent_code', 'like', "%{$search}%");
-        });
-        
+
+        // Query data maintain sesuai agent login + pencarian
+        $maintainQuery = Maintain::where('agent_code', $agentCode)
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('nama', 'like', "%{$search}%")
+                    ->orWhere('agent_code', 'like', "%{$search}%");
+                });
+            });
+
         $maintain = $maintainQuery->paginate(10);
 
-         $stats = [
-        'followup_today' => Customer::where('is_archived', true)
-            ->whereNotNull('next_fu_2')
-            ->count()
-    ];
+        // Statistik followup (dari maintain juga, bukan customer)
+        $stats = [
+            'followup_today' => Maintain::where('agent_code', $agentCode)
+                ->whereNotNull('fu_2_date') // asumsi next_fu_2 maksudnya fu_2_date
+                ->count()
+        ];
 
-    return view('dashboard.archive_maintain', compact('maintain', 'stats'));
+        return view('maintain.archive', compact('maintain', 'stats'));
     }
+
 
     public function archiveCustomer(Customer $customer)
     {
@@ -707,6 +715,16 @@ private function calculateFollowupToday($customers)
         // Setelah berhasil → pindahkan user ke halaman archive_maintain
     return back()->with('success', 'Customer has been archived');
     }
+
+        public function destroyArchiveMaintain($id)
+    {
+        $maintain = Maintain::findOrFail($id);
+        $maintain->delete();
+
+        return redirect()->route('dashboard.archived_maintain')
+                        ->with('success', 'Data maintain berhasil dihapus.');
+    }
+
 
 
     public function restoreCustomer(Customer $customer)
