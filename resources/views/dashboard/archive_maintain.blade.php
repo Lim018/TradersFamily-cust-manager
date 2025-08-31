@@ -177,7 +177,12 @@
                         <i class="fas fa-chevron-left"></i>
                     </button>
                 @else
-                    <a href="{{ $maintain->previousPageUrl() . (request()->getQueryString() ? '&' . request()->getQueryString() : '') }}" class="pagination-btn">
+                    @php
+                        $prevQuery = request()->except('page');
+                        $prevQueryString = http_build_query($prevQuery);
+                        $prevUrl = $maintain->previousPageUrl() . ($prevQueryString ? '&' . $prevQueryString : '');
+                    @endphp
+                    <a href="{{ $prevUrl }}" class="pagination-btn">
                         <i class="fas fa-chevron-left"></i>
                     </a>
                 @endif
@@ -186,12 +191,22 @@
                     @if ($page == $maintain->currentPage())
                         <button class="pagination-btn active">{{ $page }}</button>
                     @else
-                        <a href="{{ $url . (request()->getQueryString() ? '&' . request()->getQueryString() : '') }}" class="pagination-btn">{{ $page }}</a>
+                        @php
+                            $query = request()->except('page');
+                            $queryString = http_build_query($query);
+                            $pageUrl = $url . ($queryString ? '&' . $queryString : '');
+                        @endphp
+                        <a href="{{ $pageUrl }}" class="pagination-btn">{{ $page }}</a>
                     @endif
                 @endforeach
 
                 @if ($maintain->hasMorePages())
-                    <a href="{{ $maintain->nextPageUrl() . (request()->getQueryString() ? '&' . request()->getQueryString() : '') }}" class="pagination-btn">
+                    @php
+                        $nextQuery = request()->except('page');
+                        $nextQueryString = http_build_query($nextQuery);
+                        $nextUrl = $maintain->nextPageUrl() . ($nextQueryString ? '&' . $nextQueryString : '');
+                    @endphp
+                    <a href="{{ $nextUrl }}" class="pagination-btn">
                         <i class="fas fa-chevron-right"></i>
                     </a>
                 @else
