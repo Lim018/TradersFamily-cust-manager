@@ -87,9 +87,6 @@
                             </div>
                             <div>
                                 <div class="text-sm font-semibold text-gray-900">{{ $agent->name }}</div>
-                                @if($agent->agent_code)
-                                    <div class="text-sm text-gray-500">{{ $agent->agent_code }}</div>
-                                @endif
                             </div>
                         </div>
                     </td>
