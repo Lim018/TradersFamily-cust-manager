@@ -679,7 +679,7 @@ private function calculateFollowupToday($customers)
                 ->count()
         ];
 
-        return view('maintain.archive', compact('maintain', 'stats'));
+        return view('dashboard.archive_maintain', compact('maintain', 'stats'));
     }
 
 
