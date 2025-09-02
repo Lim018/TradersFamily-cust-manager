@@ -109,7 +109,7 @@
                     $cleanPhone = '62' . $cleanPhone;
                 }
                 
-                $message = urlencode("Halo {$customer->nama}, ini dari Traders Family. Ada waktu untuk follow-up hari ini?");
+                $message = urlencode("Halo {$customer->nama}");
                 $whatsappLink = "https://wa.me/{$cleanPhone}?text={$message}";
             }
         @endphp
