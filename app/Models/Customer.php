@@ -193,7 +193,7 @@ class Customer extends Model
             $phone = '62' . $phone;
         }
         
-        $message = "Halo {$this->nama}, ini dari Traders Family. Ada waktu untuk follow-up hari ini?";
+        $message = "Halo {$this->nama}";
         
         return "https://wa.me/{$phone}?text=" . urlencode($message);
     }
